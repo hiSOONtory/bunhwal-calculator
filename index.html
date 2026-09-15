@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>추정분할점수 계산기</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#F1EFE3;
+    --paper-raised:#FBFAF3;
+    --ink:#26251F;
+    --ink-soft:#6E6B5A;
+    --ink-faint:#9C977E;
+    --line:#D9D4BF;
+    --line-soft:#E7E3D2;
+    --seal:#B0402B;
+    --seal-strong:#8F3120;
+    --seal-tint:#F2DDD5;
+    --ledger:#3E5B4C;
+    --ledger-tint:#E3E9E1;
+    --warn-bg:#FBEADB;
+    --warn-text:#8A5A20;
+    --warn-border:#E6C79C;
+    --focus:#2F6FB0;
+    --font-display:'Gowun Batang', ui-serif, Georgia, serif;
+    --font-body:'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1C1B15; --paper-raised:#24231B; --ink:#ECE7D6; --ink-soft:#A9A38C; --ink-faint:#787357;
+      --line:#3A3829; --line-soft:#2C2B21; --seal:#E2795E; --seal-strong:#F0906F; --seal-tint:#3A241D;
+      --ledger:#7FA88E; --ledger-tint:#22301F; --warn-bg:#3A2C15; --warn-text:#E8B978; --warn-border:#5C4520;
+      --focus:#7BB3E8;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1C1B15; --paper-raised:#24231B; --ink:#ECE7D6; --ink-soft:#A9A38C; --ink-faint:#787357;
+    --line:#3A3829; --line-soft:#2C2B21; --seal:#E2795E; --seal-strong:#F0906F; --seal-tint:#3A241D;
+    --ledger:#7FA88E; --ledger-tint:#22301F; --warn-bg:#3A2C15; --warn-text:#E8B978; --warn-border:#5C4520;
+    --focus:#7BB3E8;
+  }
+
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+  @media (prefers-reduced-motion: reduce){ *{transition-duration:0.001ms !important; animation-duration:0.001ms !important;} }
+
+  .page{ max-width:1180px; margin:0 auto; padding-inline:20px; padding-block:28px 60px; }
+
+  .masthead{ display:flex; flex-direction:column; gap:10px; padding-bottom:22px; border-bottom:1px solid var(--line); margin-bottom:26px; }
+  .eyebrow{ margin:0; font-family:var(--font-mono); font-size:12px; letter-spacing:0.08em; color:var(--seal); font-weight:600; }
+  .masthead h1{ margin:0; font-family:var(--font-display); font-weight:700; font-size:clamp(28px, 4vw, 40px); text-wrap:balance; line-height:1.15; }
+  .subtitle{ margin:0; max-width:66ch; color:var(--ink-soft); font-size:15px; line-height:1.65; }
+
+  .tabs{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .tab-btn{ font-family:var(--font-body); font-weight:700; font-size:14px; padding:9px 18px; border-radius:999px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink-soft); cursor:pointer; }
+  .tab-btn[aria-selected="true"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .tab-btn:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+
+  .calc-panel{ display:grid; grid-template-columns:1fr 320px; gap:28px; align-items:start; }
+  @media (max-width: 860px){ .calc-panel{ grid-template-columns:1fr; } }
+
+  .panel-intro p{ margin:0 0 18px; color:var(--ink-soft); font-size:14.5px; line-height:1.7; max-width:74ch; }
+
+  .subsection{ margin-bottom:26px; }
+  .subsection h3{ margin:0 0 4px; font-family:var(--font-display); font-size:16.5px; font-weight:700; }
+  .subsection .subnote{ margin:0 0 12px; font-size:13px; color:var(--ink-faint); line-height:1.6; max-width:72ch; }
+
+  .toolbar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .btn{ font-family:var(--font-body); font-size:13.5px; font-weight:700; padding:8px 14px; border-radius:7px; border:1px solid var(--line); background:var(--paper-raised); color:var(--ink); cursor:pointer; }
+  .btn:hover{ border-color:var(--ink-faint); }
+  .btn-primary{ background:var(--seal); border-color:var(--seal); color:#FFF8F3; }
+  .btn-primary:hover{ background:var(--seal-strong); border-color:var(--seal-strong); }
+  .btn-ghost{ background:transparent; }
+  .btn-sm{ font-size:12.5px; padding:6px 10px; }
+  .summary-line{ margin-left:auto; font-size:13.5px; color:var(--ink-soft); }
+  .summary-line strong{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; color:var(--ink); }
+
+  .table-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--paper-raised); }
+  table.item-table{ border-collapse:collapse; width:100%; min-width:560px; font-size:13.5px; }
+  table.item-table th, table.item-table td{ padding:8px 8px; border-bottom:1px solid var(--line-soft); text-align:center; }
+  table.item-table thead th{ font-size:12px; color:var(--ink-soft); font-weight:700; letter-spacing:0.02em; border-bottom:1px solid var(--line); background:var(--line-soft); }
+  table.item-table td:first-child, table.item-table th.col-num{ color:var(--ink-faint); font-family:var(--font-mono); width:28px; }
+  table.item-table th.grade-col{ width:64px; }
+  table.item-table th.col-del{ width:34px; }
+  table.item-table tbody tr:hover{ background:var(--line-soft); }
+  table.item-table input[type="number"], table.item-table input[type="text"], table.item-table select{
+    width:100%; min-width:40px; font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:13.5px;
+    padding:5px 4px; border:1px solid transparent; border-radius:5px; background:transparent; color:var(--ink); text-align:center;
+  }
+  table.item-table input[type="text"]{ font-family:var(--font-body); text-align:left; font-variant-numeric:normal; }
+  table.item-table select{ font-family:var(--font-body); }
+  table.item-table input:hover, table.item-table select:hover{ border-color:var(--line); }
+  table.item-table input:focus, table.item-table select:focus{ border-color:var(--focus); background:var(--paper); outline:none; }
+  table.item-table td.readonly-cat{ font-size:13px; color:var(--ink-soft); }
+  .row-del{ border:none; background:transparent; color:var(--ink-faint); cursor:pointer; font-size:16px; line-height:1; padding:4px; border-radius:5px; }
+  .row-del:hover{ color:var(--seal); background:var(--seal-tint); }
+
+  .teacher-block{ border:1px solid var(--line); border-radius:10px; background:var(--paper-raised); margin-bottom:12px; overflow:hidden; }
+  .teacher-head{ display:flex; align-items:center; gap:8px; padding:10px 12px; background:var(--line-soft); flex-wrap:wrap; }
+  .teacher-head input[type="text"]{
+    font-family:var(--font-body); font-size:13.5px; font-weight:700; padding:6px 9px; border:1px solid var(--line);
+    border-radius:6px; background:var(--paper-raised); color:var(--ink);
+  }
+  .teacher-head input.teacher-round{ font-weight:400; color:var(--ink-soft); min-width:150px; flex:1 1 150px; }
+  .teacher-head input.teacher-name{ width:90px; flex:none; }
+
+  .verify-table th, .verify-table td{ font-size:13px; }
+  .verify-table td.tname{ text-align:left; color:var(--ink-soft); }
+
+  .warnings{ margin-top:12px; display:flex; flex-direction:column; gap:6px; }
+  .warning-item{ display:flex; gap:8px; align-items:flex-start; font-size:13px; line-height:1.5; padding:8px 10px; background:var(--warn-bg); color:var(--warn-text); border:1px solid var(--warn-border); border-radius:7px; }
+  .warning-item .mark{ font-weight:700; }
+
+  .results{ position:sticky; top:16px; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .results h2{ margin:0 0 4px; font-family:var(--font-display); font-size:19px; font-weight:700; }
+  .results-note{ margin:0 0 14px; font-size:12px; color:var(--ink-faint); line-height:1.5; }
+  .grade-list{ display:flex; flex-direction:column; }
+  .grade-row{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:10px 2px; border-bottom:1px dashed var(--line); }
+  .grade-row:last-child{ border-bottom:none; }
+  .grade-badge{
+    display:inline-flex; align-items:center; justify-content:center; min-width:44px; height:26px; padding:0 6px;
+    border-radius:6px; font-family:var(--font-mono); font-weight:700; font-size:13px;
+    background:var(--ledger-tint); color:var(--ledger); flex:none;
+  }
+  .grade-label{ display:flex; align-items:center; gap:10px; font-size:13.5px; color:var(--ink-soft); }
+  .grade-score{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:19px; font-weight:600; color:var(--seal); }
+  .grade-score .unit{ font-size:12px; color:var(--ink-faint); font-weight:400; margin-left:2px; }
+  .copy-btn{ width:100%; margin-top:14px; }
+
+  .page-footer{ margin-top:34px; padding-top:16px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-faint); line-height:1.6; }
+
+  .toast{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:999px; font-size:13.5px; font-weight:600; box-shadow:0 8px 24px rgba(0,0,0,0.25); z-index:20; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <p class="eyebrow">2022 개정교육과정 · 성취평가제(A~E)</p>
+    <h1>추정분할점수 계산기</h1>
+    <p class="subtitle">난이도·유형별 배점 구간에 교사별 예상 정답률을 입력하면, 협의 참여 교사들의 값을 평균해 등급 경계(A/B~E/I) 분할점수를 자동 계산합니다. 최종 분할점수는 학업성적관리위원회 심의를 거쳐 확정하세요.</p>
+    <nav class="tabs" role="tablist" aria-label="계산기 종류">
+      <button class="tab-btn" id="tab-btn-written" role="tab" aria-selected="true" aria-controls="panel-written" data-tab="written">정기시험(지필평가)</button>
+      <button class="tab-btn" id="tab-btn-performance" role="tab" aria-selected="false" aria-controls="panel-performance" data-tab="performance">수행평가</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="calc-panel" id="panel-written" data-panel="written" role="tabpanel" aria-labelledby="tab-btn-written">
+      <div class="panel-main">
+        <div class="panel-intro">
+          <p>① 문항유형·난이도별 배점 구간을 정하고 ② 협의에 참여하는 교사마다 각 성취수준(A~E) <strong>최소능력자</strong>가 그 구간에서 받을 것으로 예상되는 정답률(%)을 입력하면, 교사별 산출점수를 평균해 <strong>A/B, B/C, C/D, D/E, E/I</strong> 분할점수를 계산합니다. 1라운드→2라운드 협의를 거쳐 합의된 <strong>최종(수렴) 값</strong>만 입력하세요. 아래는 2025학년도 한국사1 사례를 예시로 넣어두었습니다.</p>
+        </div>
+
+        <div class="subsection">
+          <h3>① 배점 구간</h3>
+          <div class="toolbar">
+            <button class="btn btn-sm" data-action="add-category" data-panel="written">+ 구간 추가</button>
+            <button class="btn btn-ghost btn-sm" data-action="load-sample" data-panel="written">예시로 초기화</button>
+            <button class="btn btn-ghost btn-sm" data-action="clear" data-panel="written">표 비우기</button>
+            <span class="summary-line">배점 합계 <strong data-role="total-score">0</strong>점</span>
+          </div>
+          <div class="table-wrap">
+            <table class="item-table">
+              <thead><tr><th class="col-num">#</th><th style="width:90px">유형</th><th style="width:90px">난이도</th><th style="width:80px">배점합</th><th style="width:70px">문항수</th><th class="col-del"></th></tr></thead>
+              <tbody data-role="cat-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3>② 교사별 예상 정답률(%)</h3>
+          <p class="subnote">협의 참여 교사 수만큼 카드를 추가하세요. 카드 안의 "라운드" 칸은 기록용 메모이며 계산에는 쓰이지 않습니다 — 입력된 값이 곧 최종값으로 계산됩니다.</p>
+          <div class="toolbar">
+            <button class="btn btn-sm" data-action="add-teacher" data-panel="written">+ 교사 추가</button>
+          </div>
+          <div id="written-teachers"></div>
+        </div>
+
+        <div class="subsection">
+          <h3>③ 교사별 산출점수 (검산용)</h3>
+          <div class="table-wrap">
+            <table class="item-table verify-table">
+              <thead><tr><th style="text-align:left">교사</th><th>A/B</th><th>B/C</th><th>C/D</th><th>D/E</th><th>E/I</th></tr></thead>
+              <tbody data-role="verify-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="warnings" data-role="warnings" data-panel="written" hidden></div>
+      </div>
+      <aside class="results">
+        <h2>최종 추정 분할점수</h2>
+        <p class="results-note">교사별 산출점수의 평균입니다. 소수 둘째 자리까지 표시합니다.</p>
+        <div class="grade-list" data-role="grade-list" data-panel="written"></div>
+        <button class="btn copy-btn" data-action="copy" data-panel="written">결과 복사</button>
+      </aside>
+    </section>
+
+    <section class="calc-panel" id="panel-performance" data-panel="performance" role="tabpanel" aria-labelledby="tab-btn-performance" hidden>
+      <div class="panel-main">
+        <div class="panel-intro">
+          <p>채점기준표의 평가요소별로 만점과, 각 성취수준(A~E) <strong>최소능력자</strong>가 받을 것으로 예상되는 최소 배점을 입력하세요. 요소별 최소 배점의 합이 그 등급의 분할점수가 됩니다. 아래는 한국사 수행평가 예시이며, 직접 요소를 추가·수정하세요.</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn btn-primary" data-action="add-row" data-panel="performance">+ 평가요소 추가</button>
+          <button class="btn btn-ghost" data-action="load-sample" data-panel="performance">예시로 초기화</button>
+          <button class="btn btn-ghost" data-action="clear" data-panel="performance">표 비우기</button>
+          <span class="summary-line">만점 합계 <strong data-role="total-score">0</strong>점</span>
+        </div>
+        <div class="table-wrap">
+          <table class="item-table">
+            <thead>
+              <tr><th class="col-num">#</th><th style="width:200px; text-align:left">평가요소</th><th style="width:60px">만점</th>
+                <th class="grade-col">A최소</th><th class="grade-col">B최소</th><th class="grade-col">C최소</th><th class="grade-col">D최소</th><th class="grade-col">E최소</th><th class="col-del"></th></tr>
+            </thead>
+            <tbody data-role="tbody" data-panel="performance"></tbody>
+          </table>
+        </div>
+        <div class="warnings" data-role="warnings" data-panel="performance" hidden></div>
+      </div>
+      <aside class="results">
+        <h2>추정 분할점수</h2>
+        <p class="results-note">요소별 최소 배점을 합산한, 등급별 점수 구간의 하한선입니다.</p>
+        <div class="grade-list" data-role="grade-list" data-panel="performance"></div>
+        <button class="btn copy-btn" data-action="copy" data-panel="performance">결과 복사</button>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <p>「고등학교 학업성적관리 시행지침」의 추정분할점수 산출 절차(문항 유형·난이도 분류 → 성취수준별 예상 정답률 입력 → 분할점수 산출)를 따릅니다. 교사 간 예상 정답률 차이가 20%p 이상이면 재협의가 권장됩니다. 입력한 값은 이 기기에만 저장되며 서버로 전송되지 않습니다.</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+  var GRADES = ['A','B','C','D','E'];
+  var BOUNDARIES = { A:'A/B', B:'B/C', C:'C/D', D:'D/E', E:'E/I' };
+
+  function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+  function blankRates(){ return {A:0,B:0,C:0,D:0,E:0}; }
+
+  function sampleCategories(){
+    return [
+      { id: uid('cat'), type:'선택형', difficulty:'쉬움', weight:25.2, count:6 },
+      { id: uid('cat'), type:'선택형', difficulty:'보통', weight:45.8, count:10 },
+      { id: uid('cat'), type:'선택형', difficulty:'어려움', weight:29, count:6 }
+    ];
+  }
+
+  function sampleTeachers(cats){
+    var rows = [
+      { name:'교사1', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:30}, {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20} ] },
+      { name:'교사2', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:30}, {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20} ] },
+      { name:'교사3', round:'2라운드(최종)', rates:[ {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20}, {A:75,B:60,C:45,D:30,E:15} ] }
+    ];
+    return rows.map(function(r){
+      var rates = {};
+      cats.forEach(function(c, i){ rates[c.id] = r.rates[i] || blankRates(); });
+      return { id: uid('t'), name:r.name, round:r.round, rates:rates };
+    });
+  }
+
+  function samplePerformance(){
+    var d = [
+      ['사료 해석의 정확성', 4, 4,3,2,1,0],
+      ['논증 구조의 타당성', 3, 3,2,1,1,0],
+      ['역사적 맥락 연결',   3, 3,2,1,0,0]
+    ];
+    return d.map(function(r){
+      return { id: uid('p'), name:r[0], maxScore:r[1], mins:{A:r[2],B:r[3],C:r[4],D:r[5],E:r[6]} };
+    });
+  }
+
+  function defaultState(){
+    var cats = sampleCategories();
+    return {
+      activeTab:'written',
+      written:{ categories: cats, teachers: sampleTeachers(cats) },
+      performance:{ items: samplePerformance() }
+    };
+  }
+
+  var state = defaultState();
+
+  function loadPersisted(){
+    try{
+      var raw = localStorage.getItem('bunhwal-calc-v2');
+      if(raw){
+        var parsed = JSON.parse(raw);
+        if(parsed && parsed.written && parsed.performance){ return parsed; }
+      }
+    }catch(e){}
+    return null;
+  }
+  function persist(){ try{ localStorage.setItem('bunhwal-calc-v2', JSON.stringify(state)); }catch(e){} }
+
+  function syncTeacherCategories(){
+    var cats = state.written.categories;
+    state.written.teachers.forEach(function(t){
+      var next = {};
+      cats.forEach(function(c){ next[c.id] = t.rates[c.id] || blankRates(); });
+      t.rates = next;
+    });
+  }
+
+  // ---------- computation ----------
+
+  function teacherCutoffs(teacher){
+    var cats = state.written.categories;
+    var totals = {A:0,B:0,C:0,D:0,E:0};
+    cats.forEach(function(c){
+      var r = teacher.rates[c.id] || blankRates();
+      var w = Number(c.weight) || 0;
+      GRADES.forEach(function(g){ totals[g] += w * (Number(r[g]) || 0) / 100; });
+    });
+    return totals;
+  }
+
+  function finalCutoffsWritten(){
+    var teachers = state.written.teachers;
+    var sum = {A:0,B:0,C:0,D:0,E:0};
+    if(teachers.length === 0) return sum;
+    teachers.forEach(function(t){
+      var c = teacherCutoffs(t);
+      GRADES.forEach(function(g){ sum[g] += c[g]; });
+    });
+    var out = {};
+    GRADES.forEach(function(g){ out[g] = Math.round((sum[g] / teachers.length) * 100) / 100; });
+    return out;
+  }
+
+  function computePerformance(){
+    var items = state.performance.items;
+    var totals = {A:0,B:0,C:0,D:0,E:0};
+    items.forEach(function(it){ GRADES.forEach(function(g){ totals[g] += Number(it.mins[g]) || 0; }); });
+    return totals;
+  }
+
+  function warningsWritten(){
+    var out = [];
+    var cats = state.written.categories;
+    var teachers = state.written.teachers;
+
+    teachers.forEach(function(t){
+      cats.forEach(function(c){
+        var r = t.rates[c.id] || blankRates();
+        GRADES.forEach(function(g){
+          var v = Number(r[g]) || 0;
+          var step = g === 'E' ? 1 : 5;
+          if(v % step !== 0){
+            out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': ' + g + ' 정답률(' + v + '%)이 ' + step + '점 단위가 아닙니다.');
+          }
+        });
+        for(var i=0;i<GRADES.length-1;i++){
+          var hi = Number(r[GRADES[i]]) || 0, lo = Number(r[GRADES[i+1]]) || 0;
+          if(hi < lo){
+            out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': ' + GRADES[i] + ' 정답률이 ' + GRADES[i+1] + '보다 낮습니다.');
+          } else if(hi - lo >= 20){
+            out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': ' + GRADES[i] + '-' + GRADES[i+1] + ' 급간 차이가 ' + (hi - lo) + '점으로 20점 이상입니다.');
+          }
+        }
+      });
+    });
+
+    cats.forEach(function(c){
+      GRADES.forEach(function(g){
+        var vals = teachers.map(function(t){ return Number((t.rates[c.id]||blankRates())[g]) || 0; });
+        if(vals.length >= 2){
+          var spread = Math.max.apply(null, vals) - Math.min.apply(null, vals);
+          if(spread >= 20){
+            out.push(c.type + '/' + c.difficulty + ' · ' + g + '등급: 교사 간 예상 정답률 차이가 ' + spread + '%p로 20%p 이상입니다 — 재협의 권장.');
+          }
+        }
+      });
+    });
+
+    var totals = finalCutoffsWritten();
+    for(var i=0;i<GRADES.length-1;i++){
+      if(totals[GRADES[i]] < totals[GRADES[i+1]]){
+        out.push('등급 역전: ' + BOUNDARIES[GRADES[i]] + '(' + totals[GRADES[i]] + ')가 ' + BOUNDARIES[GRADES[i+1]] + '(' + totals[GRADES[i+1]] + ')보다 낮습니다.');
+      }
+    }
+    return out;
+  }
+
+  function warningsPerformance(){
+    var out = [];
+    state.performance.items.forEach(function(it, idx){
+      var max = Number(it.maxScore) || 0;
+      GRADES.forEach(function(g){
+        if((Number(it.mins[g])||0) > max){
+          out.push((it.name || ('요소 ' + (idx+1))) + ': ' + g + '최소 배점이 만점(' + max + ')을 초과합니다.');
+        }
+      });
+      for(var i=0;i<GRADES.length-1;i++){
+        var hi = Number(it.mins[GRADES[i]]) || 0, lo = Number(it.mins[GRADES[i+1]]) || 0;
+        if(hi < lo){ out.push((it.name || ('요소 ' + (idx+1))) + ': ' + GRADES[i] + '최소가 ' + GRADES[i+1] + '최소보다 낮습니다.'); }
+      }
+    });
+    var totals = computePerformance();
+    for(var i=0;i<GRADES.length-1;i++){
+      if(totals[GRADES[i]] < totals[GRADES[i+1]]){
+        out.push('등급 역전: ' + GRADES[i] + ' 분할점수(' + totals[GRADES[i]] + ')가 ' + GRADES[i+1] + '(' + totals[GRADES[i+1]] + ')보다 낮습니다.');
+      }
+    }
+    return out;
+  }
+
+  // ---------- rendering helpers ----------
+
+  function el(tag, attrs, children){
+    var e = document.createElement(tag);
+    if(attrs) Object.keys(attrs).forEach(function(k){
+      if(k === 'text'){ e.textContent = attrs[k]; } else { e.setAttribute(k, attrs[k]); }
+    });
+    (children||[]).forEach(function(c){ e.appendChild(c); });
+    return e;
+  }
+  function numberInput(value, dataAttrs, step){
+    var i = document.createElement('input');
+    i.type = 'number'; i.value = value; i.min = 0;
+    if(step) i.step = step;
+    Object.keys(dataAttrs).forEach(function(k){ i.setAttribute('data-' + k, dataAttrs[k]); });
+    return i;
+  }
+
+  // ---------- category table ----------
+
+  function renderCategoryTable(){
+    var tbody = document.querySelector('[data-role="cat-tbody"]');
+    tbody.innerHTML = '';
+    state.written.categories.forEach(function(c, idx){
+      var tr = document.createElement('tr');
+      tr.appendChild(el('td', {text:String(idx+1)}));
+
+      var tdType = document.createElement('td');
+      var selType = document.createElement('select');
+      selType.setAttribute('data-field','type'); selType.setAttribute('data-catid', c.id);
+      ['선택형','논술형'].forEach(function(opt){
+        var o = document.createElement('option'); o.value = opt; o.textContent = opt;
+        if(c.type === opt) o.selected = true; selType.appendChild(o);
+      });
+      tdType.appendChild(selType); tr.appendChild(tdType);
+
+      var tdDiff = document.createElement('td');
+      var selDiff = document.createElement('select');
+      selDiff.setAttribute('data-field','difficulty'); selDiff.setAttribute('data-catid', c.id);
+      ['쉬움','보통','어려움'].forEach(function(opt){
+        var o = document.createElement('option'); o.value = opt; o.textContent = opt;
+        if(c.difficulty === opt) o.selected = true; selDiff.appendChild(o);
+      });
+      tdDiff.appendChild(selDiff); tr.appendChild(tdDiff);
+
+      var tdW = document.createElement('td');
+      tdW.appendChild(numberInput(c.weight, {field:'weight', catid:c.id}));
+      tr.appendChild(tdW);
+
+      var tdN = document.createElement('td');
+      tdN.appendChild(numberInput(c.count, {field:'count', catid:c.id}));
+      tr.appendChild(tdN);
+
+      var tdDel = document.createElement('td');
+      var btn = document.createElement('button');
+      btn.className = 'row-del'; btn.setAttribute('data-action','delete-category'); btn.setAttribute('data-catid', c.id);
+      btn.setAttribute('aria-label','구간 삭제'); btn.textContent = '✕';
+      tdDel.appendChild(btn); tr.appendChild(tdDel);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- teacher blocks ----------
+
+  function renderTeacherBlocks(){
+    var container = document.getElementById('written-teachers');
+    container.innerHTML = '';
+    var cats = state.written.categories;
+
+    state.written.teachers.forEach(function(t){
+      var block = document.createElement('div');
+      block.className = 'teacher-block';
+
+      var head = document.createElement('div');
+      head.className = 'teacher-head';
+      var nameInput = document.createElement('input');
+      nameInput.type = 'text'; nameInput.className = 'teacher-name'; nameInput.value = t.name;
+      nameInput.setAttribute('data-field','name'); nameInput.setAttribute('data-tid', t.id);
+      var roundInput = document.createElement('input');
+      roundInput.type = 'text'; roundInput.className = 'teacher-round'; roundInput.value = t.round || '';
+      roundInput.placeholder = '예: 2라운드(최종)';
+      roundInput.setAttribute('data-field','round'); roundInput.setAttribute('data-tid', t.id);
+      var delBtn = document.createElement('button');
+      delBtn.className = 'row-del'; delBtn.setAttribute('data-action','delete-teacher'); delBtn.setAttribute('data-tid', t.id);
+      delBtn.setAttribute('aria-label','교사 삭제'); delBtn.textContent = '✕';
+      head.appendChild(nameInput); head.appendChild(roundInput); head.appendChild(delBtn);
+      block.appendChild(head);
+
+      var wrap = document.createElement('div');
+      wrap.className = 'table-wrap';
+      var table = document.createElement('table');
+      table.className = 'item-table';
+      var thead = document.createElement('thead');
+      thead.innerHTML = '<tr><th style="width:70px">유형</th><th style="width:70px">난이도</th><th class="grade-col">A%</th><th class="grade-col">B%</th><th class="grade-col">C%</th><th class="grade-col">D%</th><th class="grade-col">E%</th></tr>';
+      table.appendChild(thead);
+      var tbody = document.createElement('tbody');
+      cats.forEach(function(c){
+        var tr = document.createElement('tr');
+        tr.appendChild(el('td', {class:'readonly-cat', text:c.type}));
+        tr.appendChild(el('td', {class:'readonly-cat', text:c.difficulty}));
+        var r = t.rates[c.id] || blankRates();
+        GRADES.forEach(function(g){
+          var td = document.createElement('td');
+          td.appendChild(numberInput(r[g], {field:'rate', tid:t.id, catid:c.id, grade:g}, g === 'E' ? 1 : 5));
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      block.appendChild(wrap);
+
+      container.appendChild(block);
+    });
+  }
+
+  function renderVerifyTable(){
+    var tbody = document.querySelector('[data-role="verify-tbody"]');
+    tbody.innerHTML = '';
+    state.written.teachers.forEach(function(t){
+      var c = teacherCutoffs(t);
+      var tr = document.createElement('tr');
+      tr.appendChild(el('td', {class:'tname', text:(t.name || '교사') + (t.round ? ' · ' + t.round : '')}));
+      GRADES.forEach(function(g){
+        tr.appendChild(el('td', {text: (Math.round(c[g]*100)/100).toFixed(2)}));
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- performance table (unchanged shape) ----------
+
+  function renderPerformanceTable(){
+    var tbody = document.querySelector('tbody[data-panel="performance"]');
+    tbody.innerHTML = '';
+    state.performance.items.forEach(function(it, idx){
+      var tr = document.createElement('tr');
+      tr.appendChild(el('td', {text:String(idx+1)}));
+
+      var tdName = document.createElement('td');
+      var iName = document.createElement('input');
+      iName.type = 'text'; iName.value = it.name;
+      iName.setAttribute('data-field','name'); iName.setAttribute('data-id', it.id);
+      tdName.appendChild(iName); tr.appendChild(tdName);
+
+      var tdMax = document.createElement('td');
+      tdMax.appendChild(numberInput(it.maxScore, {field:'maxScore', id:it.id}));
+      tr.appendChild(tdMax);
+
+      GRADES.forEach(function(g){
+        var td = document.createElement('td');
+        td.appendChild(numberInput(it.mins[g], {field:'min', grade:g, id:it.id}));
+        tr.appendChild(td);
+      });
+
+      var tdDel = document.createElement('td');
+      var btn = document.createElement('button');
+      btn.className = 'row-del'; btn.setAttribute('data-action','delete-row'); btn.setAttribute('data-panel','performance'); btn.setAttribute('data-id', it.id);
+      btn.setAttribute('aria-label','평가요소 삭제'); btn.textContent = '✕';
+      tdDel.appendChild(btn); tr.appendChild(tdDel);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- results / warnings / totals ----------
+
+  function renderResultsWritten(){
+    var totals = finalCutoffsWritten();
+    var container = document.querySelector('[data-role="grade-list"][data-panel="written"]');
+    container.innerHTML = '';
+    GRADES.forEach(function(g){
+      container.appendChild(el('div', {class:'grade-row'}, [
+        el('div', {class:'grade-label'}, [ el('span', {class:'grade-badge', text:BOUNDARIES[g]}), el('span', {text:BOUNDARIES[g] + ' 분할점수'}) ]),
+        el('div', {class:'grade-score'}, [ document.createTextNode(totals[g].toFixed(2)), el('span', {class:'unit', text:'점'}) ])
+      ]));
+    });
+  }
+
+  function renderResultsPerformance(){
+    var totals = computePerformance();
+    var container = document.querySelector('[data-role="grade-list"][data-panel="performance"]');
+    container.innerHTML = '';
+    GRADES.forEach(function(g){
+      container.appendChild(el('div', {class:'grade-row'}, [
+        el('div', {class:'grade-label'}, [ el('span', {class:'grade-badge', text:g}), el('span', {text:g + ' 분할점수'}) ]),
+        el('div', {class:'grade-score'}, [ document.createTextNode(String(totals[g])), el('span', {class:'unit', text:'점'}) ])
+      ]));
+    });
+  }
+
+  function renderWarnings(panel){
+    var list = panel === 'written' ? warningsWritten() : warningsPerformance();
+    var box = document.querySelector('[data-role="warnings"][data-panel="' + panel + '"]');
+    box.innerHTML = '';
+    if(list.length === 0){ box.hidden = true; return; }
+    box.hidden = false;
+    list.forEach(function(msg){
+      box.appendChild(el('div', {class:'warning-item'}, [ el('span', {class:'mark', text:'⚠'}), el('span', {text: msg}) ]));
+    });
+  }
+
+  function renderTotalScoreWritten(){
+    var sum = 0;
+    state.written.categories.forEach(function(c){ sum += Number(c.weight) || 0; });
+    var target = document.querySelector('.calc-panel[data-panel="written"] [data-role="total-score"]');
+    if(target) target.textContent = (Math.round(sum*100)/100).toString();
+  }
+  function renderTotalScorePerformance(){
+    var sum = 0;
+    state.performance.items.forEach(function(it){ sum += Number(it.maxScore) || 0; });
+    var target = document.querySelector('.calc-panel[data-panel="performance"] [data-role="total-score"]');
+    if(target) target.textContent = String(sum);
+  }
+
+  function renderWritten(){
+    renderCategoryTable();
+    renderTeacherBlocks();
+    renderVerifyTable();
+    renderResultsWritten();
+    renderWarnings('written');
+    renderTotalScoreWritten();
+  }
+  function renderPerformance(){
+    renderPerformanceTable();
+    renderResultsPerformance();
+    renderWarnings('performance');
+    renderTotalScorePerformance();
+  }
+  function renderAll(){ renderWritten(); renderPerformance(); persist(); }
+
+  // ---------- events ----------
+
+  function findCategory(id){
+    var arr = state.written.categories;
+    for(var i=0;i<arr.length;i++){ if(arr[i].id === id) return arr[i]; }
+    return null;
+  }
+  function findTeacher(id){
+    var arr = state.written.teachers;
+    for(var i=0;i<arr.length;i++){ if(arr[i].id === id) return arr[i]; }
+    return null;
+  }
+  function findPerfItem(id){
+    var arr = state.performance.items;
+    for(var i=0;i<arr.length;i++){ if(arr[i].id === id) return arr[i]; }
+    return null;
+  }
+
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    var field = t.getAttribute('data-field');
+    if(!field) return;
+
+    if(t.hasAttribute('data-catid') && !t.hasAttribute('data-tid')){
+      var cat = findCategory(t.getAttribute('data-catid'));
+      if(!cat) return;
+      cat[field] = t.value;
+      renderVerifyTable(); renderResultsWritten(); renderWarnings('written'); renderTotalScoreWritten(); persist();
+      return;
+    }
+
+    if(t.hasAttribute('data-tid') && field === 'rate'){
+      var teacher = findTeacher(t.getAttribute('data-tid'));
+      if(!teacher) return;
+      var catid = t.getAttribute('data-catid');
+      teacher.rates[catid][t.getAttribute('data-grade')] = t.value;
+      renderVerifyTable(); renderResultsWritten(); renderWarnings('written'); persist();
+      return;
+    }
+
+    if(t.hasAttribute('data-tid') && (field === 'name' || field === 'round')){
+      var teacher2 = findTeacher(t.getAttribute('data-tid'));
+      if(!teacher2) return;
+      teacher2[field] = t.value;
+      renderVerifyTable(); persist();
+      return;
+    }
+
+    if(t.closest('tbody[data-panel="performance"]')){
+      var id = t.getAttribute('data-id');
+      var item = findPerfItem(id);
+      if(!item) return;
+      if(field === 'maxScore'){ item.maxScore = t.value; }
+      else if(field === 'name'){ item.name = t.value; }
+      else if(field === 'min'){ item.mins[t.getAttribute('data-grade')] = t.value; }
+      renderResultsPerformance(); renderWarnings('performance'); renderTotalScorePerformance(); persist();
+    }
+  });
+
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-action]');
+    if(!t) return;
+    var action = t.getAttribute('data-action');
+    var panel = t.getAttribute('data-panel');
+
+    if(action === 'add-category'){
+      var newCat = { id: uid('cat'), type:'선택형', difficulty:'보통', weight:0, count:0 };
+      state.written.categories.push(newCat);
+      syncTeacherCategories();
+      renderWritten(); persist();
+    }
+    if(action === 'delete-category'){
+      var catid = t.getAttribute('data-catid');
+      state.written.categories = state.written.categories.filter(function(c){ return c.id !== catid; });
+      syncTeacherCategories();
+      renderWritten(); persist();
+    }
+    if(action === 'add-teacher'){
+      var cats = state.written.categories;
+      var rates = {}; cats.forEach(function(c){ rates[c.id] = blankRates(); });
+      state.written.teachers.push({ id: uid('t'), name:'교사' + (state.written.teachers.length+1), round:'', rates:rates });
+      renderTeacherBlocks(); renderVerifyTable(); renderResultsWritten(); renderWarnings('written'); persist();
+    }
+    if(action === 'delete-teacher'){
+      var tid = t.getAttribute('data-tid');
+      state.written.teachers = state.written.teachers.filter(function(x){ return x.id !== tid; });
+      renderTeacherBlocks(); renderVerifyTable(); renderResultsWritten(); renderWarnings('written'); persist();
+    }
+
+    if(action === 'add-row' && panel === 'performance'){
+      state.performance.items.push({ id: uid('p'), name:'', maxScore:0, mins:blankRates() });
+      renderPerformance(); persist();
+    }
+    if(action === 'delete-row' && panel === 'performance'){
+      var pid = t.getAttribute('data-id');
+      state.performance.items = state.performance.items.filter(function(it){ return it.id !== pid; });
+      renderPerformance(); persist();
+    }
+
+    if(action === 'load-sample'){
+      if(panel === 'written'){
+        var c2 = sampleCategories();
+        state.written.categories = c2;
+        state.written.teachers = sampleTeachers(c2);
+        renderWritten();
+      } else {
+        state.performance.items = samplePerformance();
+        renderPerformance();
+      }
+      persist();
+    }
+    if(action === 'clear'){
+      if(panel === 'written'){ state.written.categories = []; state.written.teachers = []; renderWritten(); }
+      else { state.performance.items = []; renderPerformance(); }
+      persist();
+    }
+
+    if(action === 'copy'){
+      var lines;
+      if(panel === 'written'){
+        var totals = finalCutoffsWritten();
+        lines = ['정기시험(지필평가) 추정분할점수'].concat(GRADES.map(function(g){ return BOUNDARIES[g] + '\t' + totals[g].toFixed(2) + '점'; }));
+      } else {
+        var totalsP = computePerformance();
+        lines = ['수행평가 추정분할점수'].concat(GRADES.map(function(g){ return g + '\t' + totalsP[g] + '점'; }));
+      }
+      var text = lines.join('\n');
+      showToast('복사되었습니다');
+      try{ navigator.clipboard.writeText(text).catch(function(){ fallbackCopy(text); }); }catch(e){ fallbackCopy(text); }
+    }
+
+    if(t.id === 'tab-btn-written' || t.id === 'tab-btn-performance'){
+      switchTab(t.getAttribute('data-tab'));
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    var field = t.getAttribute('data-field');
+    if(!field) return;
+    if(t.hasAttribute('data-catid') && !t.hasAttribute('data-tid') && (field === 'type' || field === 'difficulty')){
+      var cat = findCategory(t.getAttribute('data-catid'));
+      if(cat){ cat[field] = t.value; renderTeacherBlocks(); renderVerifyTable(); renderWarnings('written'); persist(); }
+    }
+  });
+
+  function fallbackCopy(text){
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    }catch(e){}
+  }
+
+  var toastTimer = null;
+  function showToast(msg){
+    var toast = document.getElementById('toast');
+    toast.textContent = msg; toast.hidden = false;
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.hidden = true; }, 1600);
+  }
+
+  function switchTab(tab){
+    state.activeTab = tab;
+    document.getElementById('tab-btn-written').setAttribute('aria-selected', String(tab === 'written'));
+    document.getElementById('tab-btn-performance').setAttribute('aria-selected', String(tab === 'performance'));
+    document.getElementById('panel-written').hidden = tab !== 'written';
+    document.getElementById('panel-performance').hidden = tab !== 'performance';
+    persist();
+  }
+
+  // ---------- boot ----------
+
+  function start(savedData){
+    var restored = (savedData && Object.keys(savedData).length) ? savedData : loadPersisted();
+    if(restored){ state = restored; syncTeacherCategories(); }
+    renderAll();
+    switchTab(state.activeTab || 'written');
+  }
+
+  if(window.claude && window.claude.hot && window.claude.hot.snapshot){
+    window.claude.hot.snapshot(function(){ return state; });
+  }
+  if(window.claude && window.claude.hot && window.claude.hot.ready){
+    window.claude.hot.ready(start);
+  }else{
+    start((window.claude && window.claude.hot && window.claude.hot.data) || {});
+  }
+})();
+</script>
+
+</body>
+</html>
