@@ -20,6 +20,7 @@
   body{
     margin:0; background:var(--board); color:var(--chalk);
     font-family:var(--font-body);
+    word-break:keep-all; overflow-wrap:break-word;
     background-image:
       radial-gradient(ellipse 80% 50% at 10% 0%, rgba(244,239,225,0.05), transparent 60%),
       radial-gradient(ellipse 70% 40% at 90% 100%, rgba(244,239,225,0.04), transparent 60%);
@@ -115,6 +116,17 @@
   }
   .rules li::before{ content:"—"; color:var(--coral); font-weight:700; flex:none; }
   .rules .note{ margin:14px 0 0; font-size:12.5px; color:var(--chalk-dim); line-height:1.6; }
+
+  /* worked example */
+  .worked{ background:var(--board-raised); border:1.5px dashed var(--line); border-radius:16px; padding:22px 22px 20px; }
+  .worked > p{ margin:0 0 16px; font-size:14px; line-height:1.75; color:var(--chalk); }
+  .worked table{ width:100%; border-collapse:collapse; font-size:13px; margin-bottom:6px; }
+  .worked th, .worked td{ padding:7px 6px; text-align:center; border-bottom:1px dashed var(--line); font-variant-numeric:tabular-nums; }
+  .worked th{ color:var(--chalk-dim); font-weight:700; font-size:11px; letter-spacing:0.02em; }
+  .worked th:first-child, .worked td:first-child{ text-align:left; }
+  .worked tfoot td{ font-weight:700; color:var(--chalk); border-bottom:none; padding-top:10px; }
+  .worked .final{ margin:14px 0 0; padding-top:14px; border-top:1.5px dashed var(--line); font-size:14px; line-height:1.7; color:var(--chalk); }
+  .worked .final b{ color:var(--yellow); font-weight:700; }
 
   footer{
     margin-top:52px; padding-top:18px; border-top:1.5px dashed var(--line);
@@ -239,9 +251,29 @@
         </svg>
         <div>
           <h4>결과 확인하고 복사</h4>
-          <p>오른쪽에 A/B~E/I 분할점수가 바로 뜨고, "결과 복사"로 협의록에 붙여넣을 수 있어요.</p>
+          <p>오른쪽에 A/B~E/I 분할점수가 바로 뜨고, "결과 복사"를 누르면 등급과 점수가 줄마다 탭으로 구분된 텍스트로 복사돼요. 한글이나 엑셀 표에 붙여넣으면 칸이 알아서 나뉘어요.</p>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>숫자로 한 번 확인해볼게요</h2>
+      <p>계산기를 처음 열면 미리 채워져 있는 2025학년도 한국사1 예시로, "정답률을 평균 내면 왜 이 점수가 나오는지" 직접 손으로도 검산해볼 수 있어요.</p>
+    </div>
+    <div class="worked">
+      <p>교사1이 <strong>A등급 최소능력자</strong>는 이 정도는 맞힐 거라고 예상한 정답률이에요. 구간마다 <strong>배점 × 정답률</strong>을 구해서 더하면, 교사1 혼자만의 A 기준 점수가 나와요.</p>
+      <table>
+        <thead><tr><th>구간</th><th>배점</th><th>A 예상 정답률</th><th>기여 점수</th></tr></thead>
+        <tbody>
+          <tr><td>선택형 · 쉬움</td><td>25.2점</td><td>90%</td><td>22.68점</td></tr>
+          <tr><td>선택형 · 보통</td><td>45.8점</td><td>85%</td><td>38.93점</td></tr>
+          <tr><td>선택형 · 어려움</td><td>29.0점</td><td>80%</td><td>23.20점</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">교사1의 A 기준 점수</td><td>84.81점</td></tr></tfoot>
+      </table>
+      <p class="final">교사2도 같은 방식으로 <b>84.81점</b>, 교사3은 <b>79.81점</b>이 나와요. 이 셋을 평균 내면 <b>83.14점</b> — 이게 계산기 오른쪽에 뜨는 <strong>A/B 분할점수</strong>예요. B/C, C/D, D/E, E/I도 정확히 같은 방식으로, 등급만 바꿔서 계산해요.</p>
     </div>
   </section>
 
@@ -267,14 +299,15 @@
         <path d="M24 20 v10" />
         <circle cx="24" cy="34" r="1.6" fill="#F4EFE1" stroke="none"/>
       </svg>
-      <h2>꼭 지켜야 할 3가지</h2>
+      <h2>꼭 알아야 할 4가지</h2>
     </div>
     <ul>
       <li>정답률은 <strong>5점 단위</strong>로 (E등급만 1점 단위 가능)</li>
       <li>바로 위·아래 등급끼리 점수 차이가 <strong>20점을 넘으면 안 돼요</strong></li>
       <li>위 등급 점수가 아래 등급보다 <strong>낮으면 안 돼요</strong> (예: A가 B보다 낮으면 오류)</li>
+      <li>같은 구간에서 <strong>교사 간 예상 정답률 차이가 20%p 이상</strong>이면 재협의를 권장해요</li>
     </ul>
-    <p class="note">이 규칙을 어기면 화면 아래에 노란 경고 문구가 자동으로 떠요. 경고가 하나도 없을 때 최종본을 나이스에 올리세요.</p>
+    <p class="note">네 가지 다 직접 계산할 필요 없어요 — 어기는 순간 화면 아래에 노란 경고 문구가 자동으로 떠요. 경고가 하나도 없을 때 최종본을 나이스에 올리세요. 입력한 내용은 손 뗄 때마다 이 브라우저에 자동 저장되니, 협의 도중 창을 닫아도 다음에 열면 그대로예요.</p>
   </section>
 
   <footer>

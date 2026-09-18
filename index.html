@@ -44,7 +44,10 @@
   }
 
   *{box-sizing:border-box;}
-  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); }
+  body{
+    margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body);
+    word-break:keep-all; overflow-wrap:break-word;
+  }
   @media (prefers-reduced-motion: reduce){ *{transition-duration:0.001ms !important; animation-duration:0.001ms !important;} }
 
   .page{ max-width:1180px; margin:0 auto; padding-inline:20px; padding-block:28px 60px; }
