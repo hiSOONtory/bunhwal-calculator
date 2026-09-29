@@ -119,6 +119,14 @@
   .warning-item{ display:flex; gap:8px; align-items:flex-start; font-size:13px; line-height:1.5; padding:8px 10px; background:var(--warn-bg); color:var(--warn-text); border:1px solid var(--warn-border); border-radius:7px; }
   .warning-item .mark{ font-weight:700; }
 
+  table.item-table.breakdown-table td:first-child, table.item-table.reverse-table td:first-child{ font-family:var(--font-body); color:var(--ink-soft); width:auto; text-align:left; white-space:nowrap; }
+  .breakdown-table td .rate{ display:block; font-size:11px; color:var(--ink-faint); }
+  .breakdown-table tfoot td, .reverse-table tr.result-row td{ font-weight:700; color:var(--seal); border-top:1px solid var(--line); }
+  .reverse-table tr.target-row td{ background:var(--seal-tint); }
+  .reverse-table tr.target-row input[type="number"]{ border-color:var(--seal); background:var(--paper); font-weight:600; }
+  .knob-label{ font-size:13px; color:var(--ink-soft); }
+  .note-list{ margin:10px 0 0; padding-left:18px; font-size:12.5px; color:var(--warn-text); line-height:1.6; }
+
   .results{ position:sticky; top:16px; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; padding:18px; }
   .results h2{ margin:0 0 4px; font-family:var(--font-display); font-size:19px; font-weight:700; }
   .results-note{ margin:0 0 14px; font-size:12px; color:var(--ink-faint); line-height:1.5; }
@@ -199,6 +207,39 @@
         </div>
 
         <div class="warnings" data-role="warnings" data-panel="written" hidden></div>
+
+        <div class="subsection" style="margin-top:26px">
+          <h3>④ 최종 분할점수는 이렇게 나와요</h3>
+          <p class="subnote">구간마다 <strong>배점합 × 교사들 평균 정답률 ÷ 100</strong>을 구해 모두 더한 값이 그 등급의 분할점수입니다. 칸의 작은 숫자는 평균 정답률, 큰 숫자는 그 구간이 보태는 점수예요.</p>
+          <div class="table-wrap">
+            <table class="item-table breakdown-table">
+              <thead><tr><th style="text-align:left">구간</th><th>배점합</th><th>A/B</th><th>B/C</th><th>C/D</th><th>D/E</th><th>E/I</th></tr></thead>
+              <tbody data-role="breakdown-tbody"></tbody>
+              <tfoot data-role="breakdown-tfoot"></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3>⑤ 원하는 분할점수로 정답률 거꾸로 찾기</h3>
+          <p class="subnote">분홍 줄에 목표 분할점수를 넣으면 나이스 규칙(5점 단위, E는 1점 단위, 급간 20점 미만)에 맞는 정답률을 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요. 협의 교사가 모두 이 값을 넣으면 '예상 결과'대로 나옵니다.</p>
+          <div class="toolbar">
+            <label for="spread-select" class="knob-label">쉬움·보통·어려움 사이 정답률 차이</label>
+            <select id="spread-select" class="btn btn-sm" data-field="spread">
+              <option value="0">0%p</option><option value="5">5%p</option><option value="10">10%p</option><option value="15">15%p</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table class="item-table reverse-table">
+              <thead>
+                <tr><th style="text-align:left">구간</th><th>배점합</th><th>A%</th><th>B%</th><th>C%</th><th>D%</th><th>E%</th></tr>
+                <tr class="target-row" data-role="target-row"></tr>
+              </thead>
+              <tbody data-role="reverse-tbody"></tbody>
+            </table>
+          </div>
+          <ul class="note-list" data-role="reverse-notes" hidden></ul>
+        </div>
       </div>
       <aside class="results">
         <h2>최종 추정 분할점수</h2>
@@ -287,11 +328,13 @@
     });
   }
 
+  function defaultTargets(){ return {A:85,B:75,C:60,D:45,E:30}; }
+
   function defaultState(){
     var cats = sampleCategories();
     return {
       activeTab:'written',
-      written:{ categories: cats, teachers: sampleTeachers(cats) },
+      written:{ categories: cats, teachers: sampleTeachers(cats), targets: defaultTargets(), spread: 10 },
       performance:{ items: samplePerformance() }
     };
   }
@@ -600,6 +643,120 @@
         el('div', {class:'grade-score'}, [ document.createTextNode(totals[g].toFixed(2)), el('span', {class:'unit', text:'점'}) ])
       ]));
     });
+    renderBreakdown();
+    renderReverseOutput();
+  }
+
+  function fmt(v){ return (Math.round(v*100)/100).toFixed(2); }
+
+  function avgRate(c, g){
+    var ts = state.written.teachers;
+    if(ts.length === 0) return 0;
+    var s = 0;
+    ts.forEach(function(t){ s += Number((t.rates[c.id] || blankRates())[g]) || 0; });
+    return s / ts.length;
+  }
+
+  function renderBreakdown(){
+    var tbody = document.querySelector('[data-role="breakdown-tbody"]');
+    var tfoot = document.querySelector('[data-role="breakdown-tfoot"]');
+    tbody.innerHTML = ''; tfoot.innerHTML = '';
+    var totals = blankRates();
+    state.written.categories.forEach(function(c){
+      var w = Number(c.weight) || 0;
+      var tr = document.createElement('tr');
+      tr.appendChild(el('td', {text: c.type + ' · ' + c.difficulty}));
+      tr.appendChild(el('td', {text: String(w)}));
+      GRADES.forEach(function(g){
+        var r = avgRate(c, g), part = w * r / 100;
+        totals[g] += part;
+        tr.appendChild(el('td', {}, [ el('span', {class:'rate', text: (Math.round(r*10)/10) + '%'}), document.createTextNode(fmt(part)) ]));
+      });
+      tbody.appendChild(tr);
+    });
+    var tr = document.createElement('tr');
+    tr.appendChild(el('td', {text:'합계 = 최종 분할점수'}));
+    tr.appendChild(el('td', {text:''}));
+    GRADES.forEach(function(g){ tr.appendChild(el('td', {text: fmt(totals[g])})); });
+    tfoot.appendChild(tr);
+  }
+
+  var DIFF_DIR = {'쉬움':1, '보통':0, '어려움':-1};
+
+  // ponytail: brute-force scan of one base rate per grade; fine for a handful of categories
+  function reverseRates(){
+    var cats = state.written.categories;
+    var spread = Number(state.written.spread) || 0;
+    var out = {};
+    GRADES.forEach(function(g){
+      var step = g === 'E' ? 1 : 5;
+      var target = Number(state.written.targets[g]) || 0;
+      var best = null;
+      for(var p = -50; p <= 150; p++){
+        var rates = cats.map(function(c){
+          var v = Math.round((p + (DIFF_DIR[c.difficulty] || 0) * spread) / step) * step;
+          return Math.min(100, Math.max(0, v));
+        });
+        var score = 0;
+        cats.forEach(function(c, i){ score += (Number(c.weight) || 0) * rates[i] / 100; });
+        var diff = Math.abs(score - target);
+        if(!best || diff < best.diff - 1e-9) best = { rates:rates, score:score, diff:diff };
+      }
+      out[g] = best;
+    });
+    return out;
+  }
+
+  function renderReverseInputs(){
+    var row = document.querySelector('[data-role="target-row"]');
+    row.innerHTML = '';
+    row.appendChild(el('td', {text:'목표 분할점수'}));
+    row.appendChild(el('td', {text:''}));
+    GRADES.forEach(function(g){
+      var td = document.createElement('td');
+      var inp = numberInput(state.written.targets[g], {field:'target', grade:g}, 'any');
+      inp.id = 'target-' + g;
+      inp.setAttribute('aria-label', BOUNDARIES[g] + ' 목표 분할점수');
+      td.appendChild(inp);
+      row.appendChild(td);
+    });
+    document.getElementById('spread-select').value = String(state.written.spread);
+  }
+
+  function renderReverseOutput(){
+    var cats = state.written.categories;
+    var res = reverseRates();
+    var tbody = document.querySelector('[data-role="reverse-tbody"]');
+    var notes = document.querySelector('[data-role="reverse-notes"]');
+    tbody.innerHTML = ''; notes.innerHTML = '';
+    cats.forEach(function(c, i){
+      var tr = document.createElement('tr');
+      tr.appendChild(el('td', {text: c.type + ' · ' + c.difficulty}));
+      tr.appendChild(el('td', {text: String(Number(c.weight) || 0)}));
+      GRADES.forEach(function(g){ tr.appendChild(el('td', {text: res[g].rates[i] + '%'})); });
+      tbody.appendChild(tr);
+    });
+    var tr = document.createElement('tr');
+    tr.className = 'result-row';
+    tr.appendChild(el('td', {text:'예상 결과'}));
+    tr.appendChild(el('td', {text:''}));
+    GRADES.forEach(function(g){ tr.appendChild(el('td', {text: fmt(res[g].score)})); });
+    tbody.appendChild(tr);
+
+    var msgs = [];
+    cats.forEach(function(c, i){
+      for(var k = 0; k < GRADES.length - 1; k++){
+        var hi = res[GRADES[k]].rates[i], lo = res[GRADES[k+1]].rates[i];
+        var label = c.type + '·' + c.difficulty + ': ';
+        if(hi < lo) msgs.push(label + GRADES[k] + ' 정답률이 ' + GRADES[k+1] + '보다 낮아요 — 목표 순서를 확인하세요.');
+        else if(hi - lo >= 20) msgs.push(label + GRADES[k] + '-' + GRADES[k+1] + ' 차이가 ' + (hi - lo) + '점이라 나이스에 입력이 안 돼요 — ' + BOUNDARIES[GRADES[k]] + '와 ' + BOUNDARIES[GRADES[k+1]] + ' 목표를 더 가깝게 잡으세요.');
+      }
+    });
+    GRADES.forEach(function(g){
+      if(res[g].diff >= 1) msgs.push(BOUNDARIES[g] + ': 5점 단위 한계로 목표보다 ' + fmt(res[g].diff) + '점 차이가 나요.');
+    });
+    msgs.forEach(function(m){ notes.appendChild(el('li', {text:m})); });
+    notes.hidden = msgs.length === 0;
   }
 
   function renderResultsPerformance(){
@@ -642,6 +799,7 @@
     renderCategoryTable();
     renderTeacherBlocks();
     renderVerifyTable();
+    renderReverseInputs();
     renderResultsWritten();
     renderWarnings('written');
     renderTotalScoreWritten();
@@ -676,6 +834,9 @@
     var t = e.target;
     var field = t.getAttribute('data-field');
     if(!field) return;
+
+    if(field === 'target'){ state.written.targets[t.getAttribute('data-grade')] = t.value; renderReverseOutput(); persist(); return; }
+    if(field === 'spread'){ state.written.spread = Number(t.value); renderReverseOutput(); persist(); return; }
 
     if(t.hasAttribute('data-catid') && !t.hasAttribute('data-tid')){
       var cat = findCategory(t.getAttribute('data-catid'));
@@ -796,7 +957,7 @@
     if(!field) return;
     if(t.hasAttribute('data-catid') && !t.hasAttribute('data-tid') && (field === 'type' || field === 'difficulty')){
       var cat = findCategory(t.getAttribute('data-catid'));
-      if(cat){ cat[field] = t.value; renderTeacherBlocks(); renderVerifyTable(); renderWarnings('written'); persist(); }
+      if(cat){ cat[field] = t.value; renderTeacherBlocks(); renderVerifyTable(); renderResultsWritten(); renderWarnings('written'); persist(); }
     }
   });
 
@@ -830,6 +991,8 @@
   function start(savedData){
     var restored = (savedData && Object.keys(savedData).length) ? savedData : loadPersisted();
     if(restored){ state = restored; syncTeacherCategories(); }
+    if(!state.written.targets) state.written.targets = defaultTargets();
+    if(state.written.spread == null) state.written.spread = 10;
     renderAll();
     switchTab(state.activeTab || 'written');
   }
