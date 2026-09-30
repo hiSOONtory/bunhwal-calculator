@@ -70,7 +70,13 @@
 
   /* two exam types */
   .type-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media (max-width:600px){ .type-grid{ grid-template-columns:1fr; } }
+  .type-grid-3{ grid-template-columns:repeat(3, 1fr); }
+  @media (max-width:600px){ .type-grid, .type-grid-3{ grid-template-columns:1fr; } }
+
+  .reverse-pic{ margin-bottom:18px; overflow-x:auto; }
+  .reverse-pic svg{ min-width:560px; display:block; }
+  .tip{ margin:16px 0 0; font-size:13.5px; line-height:1.7; color:var(--chalk-dim); }
+  .tip b{ color:var(--yellow); font-weight:700; }
   .type-card{
     background:var(--board-raised); border:1.5px dashed var(--line); border-radius:16px;
     padding:22px 20px; display:flex; flex-direction:column; gap:10px; align-items:flex-start;
@@ -190,10 +196,10 @@
 
   <section>
     <div class="section-head">
-      <h2>시험 종류는 두 가지</h2>
-      <p>탭 위쪽에서 골라서 쓰시면 됩니다.</p>
+      <h2>탭은 세 가지</h2>
+      <p>계산기 위쪽에서 골라서 쓰시면 됩니다.</p>
     </div>
-    <div class="type-grid">
+    <div class="type-grid type-grid-3">
       <div class="type-card">
         <span class="tag">지필평가</span>
         <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#F4EFE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -212,6 +218,16 @@
         </svg>
         <h3>수행평가</h3>
         <p>대표 선생님 한 분이 평가요소별 최소 점수만 넣으면 끝이에요.</p>
+      </div>
+      <div class="type-card">
+        <span class="tag">거꾸로 찾기</span>
+        <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#F4EFE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="24" cy="24" r="16"/>
+          <circle cx="24" cy="24" r="8"/>
+          <circle cx="24" cy="24" r="2.2" fill="#F2CB5D" stroke="none"/>
+        </svg>
+        <h3>목표 → 정답률</h3>
+        <p>원하는 분할점수를 먼저 넣으면, 나이스에 넣을 정답률을 거꾸로 찾아줘요.</p>
       </div>
     </div>
   </section>
@@ -274,35 +290,102 @@
         <tfoot><tr><td colspan="3">교사1의 A 기준 점수</td><td>84.81점</td></tr></tfoot>
       </table>
       <p class="final">교사2도 같은 방식으로 <b>84.81점</b>, 교사3은 <b>79.81점</b>이 나와요. 이 셋을 평균 내면 <b>83.14점</b> — 이게 계산기 오른쪽에 뜨는 <strong>A/B 분할점수</strong>예요. B/C, C/D, D/E, E/I도 정확히 같은 방식으로, 등급만 바꿔서 계산해요.</p>
+      <p class="final">손으로 안 해도 돼요. 정기시험 탭 맨 아래 <strong>④ 칸</strong>에 이 과정이 구간별로 자동으로 펼쳐져요. 협의 때 "이 숫자 왜 나와?"에 바로 답할 수 있어요.</p>
     </div>
   </section>
 
   <section>
     <div class="section-head">
-      <h2>검산도, 거꾸로 계산도 계산기가 해줘요</h2>
-      <p>계산 과정은 지필평가 탭 맨 아래 ④ 칸, 거꾸로 찾기는 위쪽 '정답률 거꾸로 찾기' 탭이에요.</p>
+      <h2>점수를 먼저 정하고 싶다면? 거꾸로 찾기 탭</h2>
+      <p>"A/B는 80점쯤, E/I는 20점쯤"처럼 목표를 넣으면, 선생님들이 나이스에 넣을 정답률을 거꾸로 찾아줘요.</p>
     </div>
-    <div class="type-grid">
-      <div class="type-card">
-        <span class="tag">④ 계산 과정</span>
+
+    <div class="reverse-pic">
+      <svg viewBox="0 0 640 190" width="100%" role="img" aria-label="목표 분할점수 80·65·50·35·20을 넣으면 쉬움·보통·어려움 구간별 A~E 정답률이 나온다는 그림">
+        <g font-family="Noto Sans KR" font-variant-numeric="tabular-nums">
+          <text x="110" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#F2CB5D">① 목표 분할점수</text>
+          <g font-size="12.5" fill="#F4EFE1">
+            <rect x="30" y="30" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
+            <text x="44" y="47">A/B</text><text x="176" y="47" text-anchor="end" font-weight="700">80</text>
+            <rect x="30" y="60" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
+            <text x="44" y="77">B/C</text><text x="176" y="77" text-anchor="end" font-weight="700">65</text>
+            <rect x="30" y="90" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
+            <text x="44" y="107">C/D</text><text x="176" y="107" text-anchor="end" font-weight="700">50</text>
+            <rect x="30" y="120" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
+            <text x="44" y="137">D/E</text><text x="176" y="137" text-anchor="end" font-weight="700">35</text>
+            <rect x="30" y="150" width="160" height="24" rx="6" fill="#3A3020" stroke="#F2CB5D"/>
+            <text x="44" y="167" fill="#F2CB5D">E/I</text><text x="176" y="167" text-anchor="end" font-weight="700" fill="#F2CB5D">20</text>
+          </g>
+          <text x="258" y="92" text-anchor="middle" font-size="11.5" fill="#B9C9BB">거꾸로</text>
+          <path d="M210 102 H300 M290 94 L300 102 L290 110" fill="none" stroke="#FF8C77" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="475" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#F2CB5D">② 나이스에 넣을 정답률(%)</text>
+          <g font-size="11.5" fill="#B9C9BB" text-anchor="middle">
+            <text x="408" y="48">A</text><text x="452" y="48">B</text><text x="496" y="48">C</text><text x="540" y="48">D</text><text x="584" y="48">E</text>
+          </g>
+          <g font-size="12.5" fill="#F4EFE1" text-anchor="middle">
+            <rect x="320" y="58" width="290" height="30" rx="6" fill="#24452F"/>
+            <text x="345" y="78" font-size="11.5" fill="#B9C9BB">쉬움</text>
+            <text x="408" y="78">90</text><text x="452" y="78">75</text><text x="496" y="78">60</text><text x="540" y="78">45</text><text x="584" y="78">30</text>
+            <rect x="320" y="94" width="290" height="30" rx="6" fill="#24452F"/>
+            <text x="345" y="114" font-size="11.5" fill="#B9C9BB">보통</text>
+            <text x="408" y="114">80</text><text x="452" y="114">65</text><text x="496" y="114">50</text><text x="540" y="114">35</text><text x="584" y="114">20</text>
+            <rect x="320" y="130" width="290" height="30" rx="6" fill="#24452F"/>
+            <text x="345" y="150" font-size="11.5" fill="#B9C9BB">어려움</text>
+            <text x="408" y="150">70</text><text x="452" y="150">55</text><text x="496" y="150">40</text><text x="540" y="150">25</text><text x="584" y="150">10</text>
+          </g>
+          <text x="465" y="182" text-anchor="middle" font-size="11" fill="#B9C9BB">예시 배점(25.2 · 45.8 · 29점)으로 계산한 값이에요</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">1</span>
         <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#F4EFE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M10 12 h28 M10 21 h28 M10 30 h28"/>
-          <path d="M8 38 h32" stroke="#F2CB5D"/>
+          <rect x="6" y="10" width="36" height="28" rx="3"/>
+          <path d="M6 20 h36 M18 10 v28 M30 10 v28"/>
         </svg>
-        <h3>최종값이 나오는 과정</h3>
-        <p>위 손계산을 계산기가 대신 보여줘요. 구간마다 선생님들 평균 정답률과 그 구간이 보태는 점수가 뜨고, 맨 아래 합계가 곧 분할점수예요. 협의 때 "이 숫자 왜 나와?"에 바로 답할 수 있어요.</p>
+        <div>
+          <h4>배점 구간 확인</h4>
+          <p>정기시험 탭과 같은 표예요. 어느 탭에서 고쳐도 같이 바뀌어요.</p>
+        </div>
       </div>
-      <div class="type-card">
-        <span class="tag">거꾸로 찾기 탭</span>
+      <div class="step">
+        <span class="step-num">2</span>
+        <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#F4EFE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="16" cy="16" r="6"/>
+          <circle cx="34" cy="18" r="5"/>
+          <path d="M6 40 c0-8 6-13 10-13 s10 5 10 13 M26 40 c0-6 4-10 8-10 s8 4 8 10"/>
+        </svg>
+        <div>
+          <h4>협의 교사 인원 넣기</h4>
+          <p>교사가 여럿이면 몇 명만 조금 다르게 넣어서, 평균을 목표에 더 가깝게 맞춰줘요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
         <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#F4EFE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="24" cy="24" r="16"/>
           <circle cx="24" cy="24" r="8"/>
           <circle cx="24" cy="24" r="2.2" fill="#F2CB5D" stroke="none"/>
         </svg>
-        <h3>원하는 점수 → 정답률</h3>
-        <p>배점 구간, 협의 교사 인원, 목표 분할점수를 넣으면 나이스 규칙에 맞는 정답률을 교사별로 찾아줘요. 한 칸만 넣어도 등급 간격대로 나머지가 채워지고, 교사가 많으면 몇 명만 5점 다르게 넣어 평균을 목표에 더 가깝게 맞춰요. A/B를 높이면 A가 줄고, E/I를 낮추면 미도달이 줄어요.</p>
+        <div>
+          <h4>목표 한 칸만 입력</h4>
+          <p>'등급 간격 자동 채우기'를 15점으로 두고 E/I에 20을 넣으면 80·65·50·35·20이 채워져요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-num">4</span>
+        <svg class="icon" viewBox="0 0 48 48" fill="none" stroke="#F4EFE1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 25 L20 35 L40 13"/>
+        </svg>
+        <div>
+          <h4>교사별 정답률 그대로 입력</h4>
+          <p>"교사 1 / 교사 2·3"처럼 나눠서 보여줘요. 각자 자기 표대로 나이스에 넣으면 오른쪽 점수대로 나와요.</p>
+        </div>
       </div>
     </div>
+    <p class="tip"><b>A/B를 높이면</b> A 받기가 어려워지고, <b>E/I를 낮추면</b> 미도달이 줄어요. 목표를 너무 벌리면 "나이스에 입력이 안 돼요" 안내가 표 위에 떠요.</p>
   </section>
 
   <section>
@@ -327,15 +410,16 @@
         <path d="M24 20 v10" />
         <circle cx="24" cy="34" r="1.6" fill="#F4EFE1" stroke="none"/>
       </svg>
-      <h2>꼭 알아야 할 4가지</h2>
+      <h2>꼭 알아야 할 5가지</h2>
     </div>
     <ul>
       <li>정답률은 <strong>5점 단위</strong>로 (E등급만 1점 단위 가능)</li>
-      <li>바로 위·아래 등급끼리 점수 차이가 <strong>20점을 넘으면 안 돼요</strong></li>
+      <li>바로 위·아래 등급끼리 점수 차이가 <strong>20점 이상이면 안 돼요</strong></li>
       <li>위 등급 점수가 아래 등급보다 <strong>낮으면 안 돼요</strong> (예: A가 B보다 낮으면 오류)</li>
+      <li>어려운 구간 정답률이 쉬운 구간보다 <strong>높으면 안 돼요</strong> (예: 보통 90, 쉬움 85면 오류)</li>
       <li>같은 구간에서 <strong>교사 간 예상 정답률 차이가 20%p 이상</strong>이면 재협의를 권장해요</li>
     </ul>
-    <p class="note">네 가지 다 직접 계산할 필요 없어요 — 어기는 순간 화면 아래에 노란 경고 문구가 자동으로 떠요. 경고가 하나도 없을 때 최종본을 나이스에 올리세요. 입력한 내용은 손 뗄 때마다 이 브라우저에 자동 저장되니, 협의 도중 창을 닫아도 다음에 열면 그대로예요.</p>
+    <p class="note">다섯 가지 다 직접 계산할 필요 없어요 — 어기는 순간 화면 아래에 노란 경고 문구가 자동으로 떠요. 경고가 하나도 없을 때 최종본을 나이스에 올리세요. 입력한 내용은 손 뗄 때마다 이 브라우저에 자동 저장되니, 협의 도중 창을 닫아도 다음에 열면 그대로예요.</p>
   </section>
 
   <footer>
