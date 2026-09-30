@@ -222,11 +222,15 @@
 
         <div class="subsection">
           <h3>⑤ 원하는 분할점수로 정답률 거꾸로 찾기</h3>
-          <p class="subnote">분홍 줄에 목표 분할점수를 넣으면 나이스 규칙(5점 단위, E는 1점 단위, 급간 20점 미만)에 맞는 정답률을 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요. 협의 교사가 모두 이 값을 넣으면 '예상 결과'대로 나옵니다.</p>
+          <p class="subnote">분홍 줄에 목표 분할점수를 넣으면 나이스 규칙(5점 단위, E는 1점 단위, 급간 20점 미만)에 맞는 정답률을 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요. 협의 교사가 모두 이 값을 넣으면 '예상 결과'대로 나옵니다. '등급 간격 자동 채우기'를 켜면 한 칸만 입력해도 나머지가 그 간격으로 채워져요(예: 15점 + E/I에 20 → 80·65·50·35·20).</p>
           <div class="toolbar">
             <label for="spread-select" class="knob-label">쉬움·보통·어려움 사이 정답률 차이</label>
             <select id="spread-select" class="btn btn-sm" data-field="spread">
               <option value="0">0%p</option><option value="5">5%p</option><option value="10">10%p</option><option value="15">15%p</option>
+            </select>
+            <label for="gap-select" class="knob-label" style="margin-left:12px">등급 간격 자동 채우기</label>
+            <select id="gap-select" class="btn btn-sm" data-field="autoGap">
+              <option value="0">끄기</option><option value="5">5점</option><option value="10">10점</option><option value="15">15점</option>
             </select>
           </div>
           <ul class="note-list" data-role="reverse-notes" hidden></ul>
@@ -721,6 +725,20 @@
       row.appendChild(td);
     });
     document.getElementById('spread-select').value = String(state.written.spread);
+    document.getElementById('gap-select').value = String(state.written.autoGap || 0);
+  }
+
+  function autoFillTargets(anchor){
+    var gap = Number(state.written.autoGap) || 0;
+    if(!gap) return;
+    var i0 = GRADES.indexOf(anchor), base = Number(state.written.targets[anchor]) || 0;
+    GRADES.forEach(function(g, i){
+      if(i === i0) return;
+      var v = Math.min(100, Math.max(0, base + (i0 - i) * gap));
+      state.written.targets[g] = v;
+      var inp = document.getElementById('target-' + g);
+      if(inp) inp.value = v;
+    });
   }
 
   function renderReverseOutput(){
@@ -835,7 +853,14 @@
     var field = t.getAttribute('data-field');
     if(!field) return;
 
-    if(field === 'target'){ state.written.targets[t.getAttribute('data-grade')] = t.value; renderReverseOutput(); persist(); return; }
+    if(field === 'target'){
+      var tg = t.getAttribute('data-grade');
+      state.written.targets[tg] = t.value;
+      state.written.anchor = tg;
+      autoFillTargets(tg);
+      renderReverseOutput(); persist(); return;
+    }
+    if(field === 'autoGap'){ state.written.autoGap = Number(t.value); autoFillTargets(state.written.anchor || 'E'); renderReverseOutput(); persist(); return; }
     if(field === 'spread'){ state.written.spread = Number(t.value); renderReverseOutput(); persist(); return; }
 
     if(t.hasAttribute('data-catid') && !t.hasAttribute('data-tid')){
