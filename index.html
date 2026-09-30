@@ -125,7 +125,7 @@
   .reverse-table tr.target-row td{ background:var(--seal-tint); }
   .reverse-table tr.target-row input[type="number"]{ border-color:var(--seal); background:var(--paper); font-weight:600; }
   .knob-label{ font-size:13px; color:var(--ink-soft); }
-  .note-list{ margin:10px 0 0; padding-left:18px; font-size:12.5px; color:var(--warn-text); line-height:1.6; }
+  .note-list{ margin:0 0 12px; padding:8px 12px 8px 28px; font-size:12.5px; color:var(--warn-text); line-height:1.6; background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:7px; }
 
   .results{ position:sticky; top:16px; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; padding:18px; }
   .results h2{ margin:0 0 4px; font-family:var(--font-display); font-size:19px; font-weight:700; }
@@ -229,6 +229,7 @@
               <option value="0">0%p</option><option value="5">5%p</option><option value="10">10%p</option><option value="15">15%p</option>
             </select>
           </div>
+          <ul class="note-list" data-role="reverse-notes" hidden></ul>
           <div class="table-wrap">
             <table class="item-table reverse-table">
               <thead>
@@ -238,7 +239,6 @@
               <tbody data-role="reverse-tbody"></tbody>
             </table>
           </div>
-          <ul class="note-list" data-role="reverse-notes" hidden></ul>
         </div>
       </div>
       <aside class="results">
