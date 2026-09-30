@@ -119,12 +119,16 @@
   .warning-item{ display:flex; gap:8px; align-items:flex-start; font-size:13px; line-height:1.5; padding:8px 10px; background:var(--warn-bg); color:var(--warn-text); border:1px solid var(--warn-border); border-radius:7px; }
   .warning-item .mark{ font-weight:700; }
 
-  table.item-table.breakdown-table td:first-child, table.item-table.reverse-table td:first-child{ font-family:var(--font-body); color:var(--ink-soft); width:auto; text-align:left; white-space:nowrap; }
+  table.item-table.breakdown-table td:first-child, table.item-table.reverse-table td:first-child, table.item-table.target-table td:first-child{ font-family:var(--font-body); color:var(--ink-soft); width:auto; text-align:left; white-space:nowrap; }
   .breakdown-table td .rate{ display:block; font-size:11px; color:var(--ink-faint); }
   .breakdown-table tfoot td, .reverse-table tr.result-row td{ font-weight:700; color:var(--seal); border-top:1px solid var(--line); }
-  .reverse-table tr.target-row td{ background:var(--seal-tint); }
-  .reverse-table tr.target-row input[type="number"]{ border-color:var(--seal); background:var(--paper); font-weight:600; }
+  .target-table tr.target-row td{ background:var(--seal-tint); }
+  .target-table tr.target-row input[type="number"]{ border-color:var(--seal); background:var(--paper); font-weight:600; }
   .knob-label{ font-size:13px; color:var(--ink-soft); }
+  .num-input{ width:64px; font-family:var(--font-mono); text-align:center; }
+  .set-block{ margin-bottom:14px; }
+  .set-block h4{ margin:0 0 6px; font-size:13.5px; font-weight:700; color:var(--ink); }
+  .set-block h4 span{ font-weight:400; color:var(--ink-faint); margin-left:6px; }
   .note-list{ margin:0 0 12px; padding:8px 12px 8px 28px; font-size:12.5px; color:var(--warn-text); line-height:1.6; background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:7px; }
 
   .results{ position:sticky; top:16px; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px; padding:18px; }
@@ -161,6 +165,7 @@
     <nav class="tabs" role="tablist" aria-label="계산기 종류">
       <button class="tab-btn" id="tab-btn-written" role="tab" aria-selected="true" aria-controls="panel-written" data-tab="written" data-action="switch-tab">정기시험(지필평가)</button>
       <button class="tab-btn" id="tab-btn-performance" role="tab" aria-selected="false" aria-controls="panel-performance" data-tab="performance" data-action="switch-tab">수행평가</button>
+      <button class="tab-btn" id="tab-btn-reverse" role="tab" aria-selected="false" aria-controls="panel-reverse" data-tab="reverse" data-action="switch-tab">정답률 거꾸로 찾기</button>
     </nav>
   </header>
 
@@ -219,37 +224,76 @@
             </table>
           </div>
         </div>
-
-        <div class="subsection">
-          <h3>⑤ 원하는 분할점수로 정답률 거꾸로 찾기</h3>
-          <p class="subnote">분홍 줄에 목표 분할점수를 넣으면 나이스 규칙(5점 단위, E는 1점 단위, 급간 20점 미만)에 맞는 정답률을 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요. 협의 교사가 모두 이 값을 넣으면 '예상 결과'대로 나옵니다. '등급 간격 자동 채우기'를 켜면 한 칸만 입력해도 나머지가 그 간격으로 채워져요(예: 15점 + E/I에 20 → 80·65·50·35·20).</p>
-          <div class="toolbar">
-            <label for="spread-select" class="knob-label">쉬움·보통·어려움 사이 정답률 차이</label>
-            <select id="spread-select" class="btn btn-sm" data-field="spread">
-              <option value="0">0%p</option><option value="5">5%p</option><option value="10">10%p</option><option value="15">15%p</option>
-            </select>
-            <label for="gap-select" class="knob-label" style="margin-left:12px">등급 간격 자동 채우기</label>
-            <select id="gap-select" class="btn btn-sm" data-field="autoGap">
-              <option value="0">끄기</option><option value="5">5점</option><option value="10">10점</option><option value="15">15점</option>
-            </select>
-          </div>
-          <ul class="note-list" data-role="reverse-notes" hidden></ul>
-          <div class="table-wrap">
-            <table class="item-table reverse-table">
-              <thead>
-                <tr><th style="text-align:left">구간</th><th>배점합</th><th>A%</th><th>B%</th><th>C%</th><th>D%</th><th>E%</th></tr>
-                <tr class="target-row" data-role="target-row"></tr>
-              </thead>
-              <tbody data-role="reverse-tbody"></tbody>
-            </table>
-          </div>
-        </div>
       </div>
       <aside class="results">
         <h2>최종 추정 분할점수</h2>
         <p class="results-note">교사별 산출점수의 평균입니다. 소수 둘째 자리까지 표시합니다.</p>
         <div class="grade-list" data-role="grade-list" data-panel="written"></div>
         <button class="btn copy-btn" data-action="copy" data-panel="written">결과 복사</button>
+      </aside>
+    </section>
+
+    <section class="calc-panel" id="panel-reverse" data-panel="reverse" role="tabpanel" aria-labelledby="tab-btn-reverse" hidden>
+      <div class="panel-main">
+        <div class="panel-intro">
+          <p>원하는 분할점수를 먼저 정하면, 나이스 규칙(5점 단위, E는 1점 단위, 급간 20점 미만)에 맞는 <strong>예상 정답률</strong>을 거꾸로 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요.</p>
+        </div>
+
+        <div class="subsection">
+          <h3>① 배점 구간</h3>
+          <p class="subnote">정기시험 탭의 배점 구간과 같은 표예요. 어느 탭에서 고쳐도 함께 바뀝니다.</p>
+          <div class="toolbar">
+            <button class="btn btn-sm" data-action="add-category">+ 구간 추가</button>
+            <span class="summary-line">배점 합계 <strong data-role="total-score">0</strong>점</span>
+          </div>
+          <div class="table-wrap">
+            <table class="item-table">
+              <thead><tr><th class="col-num">#</th><th style="width:90px">유형</th><th style="width:90px">난이도</th><th style="width:80px">배점합</th><th style="width:70px">문항수</th><th class="col-del"></th></tr></thead>
+              <tbody data-role="cat-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3>② 협의 조건</h3>
+          <p class="subnote">교사가 여러 명이면 몇 명만 5점 다르게 넣어서, 평균을 목표에 더 가깝게 맞출 수 있어요.</p>
+          <div class="toolbar">
+            <label for="reverse-teachers" class="knob-label">협의 교사 인원</label>
+            <input id="reverse-teachers" type="number" min="1" max="10" step="1" class="btn btn-sm num-input" data-field="reverseTeachers">
+            <label for="spread-select" class="knob-label" style="margin-left:12px">쉬움·보통·어려움 사이 정답률 차이</label>
+            <select id="spread-select" class="btn btn-sm" data-field="spread">
+              <option value="0">0%p</option><option value="5">5%p</option><option value="10">10%p</option><option value="15">15%p</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3>③ 목표 분할점수</h3>
+          <p class="subnote">'등급 간격 자동 채우기'를 켜면 한 칸만 넣어도 나머지가 채워져요(예: 15점 + E/I에 20 → 80·65·50·35·20).</p>
+          <div class="toolbar">
+            <label for="gap-select" class="knob-label">등급 간격 자동 채우기</label>
+            <select id="gap-select" class="btn btn-sm" data-field="autoGap">
+              <option value="0">끄기</option><option value="5">5점</option><option value="10">10점</option><option value="15">15점</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table class="item-table target-table">
+              <thead><tr><th>A/B</th><th>B/C</th><th>C/D</th><th>D/E</th><th>E/I</th></tr></thead>
+              <tbody><tr class="target-row" data-role="target-row"></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="subsection">
+          <h3>④ 교사별로 넣을 예상 정답률</h3>
+          <ul class="note-list" data-role="reverse-notes" hidden></ul>
+          <div data-role="reverse-sets"></div>
+        </div>
+      </div>
+      <aside class="results">
+        <h2>예상 분할점수</h2>
+        <p class="results-note">④의 정답률을 넣었을 때 교사 평균으로 나오는 값이에요.</p>
+        <div class="grade-list" data-role="grade-list" data-panel="reverse"></div>
       </aside>
     </section>
 
@@ -338,7 +382,7 @@
     var cats = sampleCategories();
     return {
       activeTab:'written',
-      written:{ categories: cats, teachers: sampleTeachers(cats), targets: defaultTargets(), spread: 10 },
+      written:{ categories: cats, teachers: sampleTeachers(cats), targets: defaultTargets(), spread: 10, reverseTeachers: 3 },
       performance:{ items: samplePerformance() }
     };
   }
@@ -500,7 +544,10 @@
   // ---------- category table ----------
 
   function renderCategoryTable(){
-    var tbody = document.querySelector('[data-role="cat-tbody"]');
+    document.querySelectorAll('[data-role="cat-tbody"]').forEach(renderCategoryRows);
+  }
+
+  function renderCategoryRows(tbody){
     tbody.innerHTML = '';
     state.written.categories.forEach(function(c, idx){
       var tr = document.createElement('tr');
@@ -697,35 +744,62 @@
 
   var DIFF_DIR = {'쉬움':1, '보통':0, '어려움':-1};
 
+  function reverseTeacherCount(){
+    return Math.min(10, Math.max(1, Math.round(Number(state.written.reverseTeachers) || 1)));
+  }
+
   // ponytail: brute-force scan of one base rate per grade; fine for a handful of categories
-  function reverseRates(){
+  function rateCandidates(g){
     var cats = state.written.categories;
     var spread = Number(state.written.spread) || 0;
-    var out = {};
+    var step = g === 'E' ? 1 : 5;
+    var seen = {}, list = [];
+    for(var p = -50; p <= 150; p++){
+      var rates = cats.map(function(c){
+        var v = Math.round((p + (DIFF_DIR[c.difficulty] || 0) * spread) / step) * step;
+        return Math.min(100, Math.max(0, v));
+      });
+      var key = rates.join(',');
+      if(seen[key]) continue;
+      seen[key] = true;
+      var score = 0;
+      cats.forEach(function(c, i){ score += (Number(c.weight) || 0) * rates[i] / 100; });
+      list.push({ rates:rates, score:score });
+    }
+    return list.sort(function(a, b){ return a.score - b.score; });
+  }
+
+  // Each grade: n teachers split between two neighbouring candidate sets so the average lands nearest the target.
+  function reversePlan(){
+    var n = reverseTeacherCount();
+    var plan = {};
     GRADES.forEach(function(g){
-      var step = g === 'E' ? 1 : 5;
+      var list = rateCandidates(g);
       var target = Number(state.written.targets[g]) || 0;
       var best = null;
-      for(var p = -50; p <= 150; p++){
-        var rates = cats.map(function(c){
-          var v = Math.round((p + (DIFF_DIR[c.difficulty] || 0) * spread) / step) * step;
-          return Math.min(100, Math.max(0, v));
-        });
-        var score = 0;
-        cats.forEach(function(c, i){ score += (Number(c.weight) || 0) * rates[i] / 100; });
-        var diff = Math.abs(score - target);
-        if(!best || diff < best.diff - 1e-9) best = { rates:rates, score:score, diff:diff };
+      for(var i = 0; i < list.length; i++){
+        var lo = list[i], hi = list[Math.min(i + 1, list.length - 1)];
+        for(var m = 0; m <= n; m++){
+          var mean = ((n - m) * lo.score + m * hi.score) / n;
+          var diff = Math.abs(mean - target);
+          if(!best || diff < best.diff - 1e-9) best = { lo:lo, hi:hi, m:m, mean:mean, diff:diff };
+        }
       }
-      out[g] = best;
+      plan[g] = best;
     });
-    return out;
+    var teachers = [];
+    for(var k = 0; k < n; k++){
+      var t = {};
+      GRADES.forEach(function(g){ t[g] = (k < plan[g].m ? plan[g].hi : plan[g].lo).rates; });
+      teachers.push(t);
+    }
+    return { n:n, plan:plan, teachers:teachers };
   }
 
   function renderReverseInputs(){
     var row = document.querySelector('[data-role="target-row"]');
     row.innerHTML = '';
-    row.appendChild(el('td', {text:'목표 분할점수'}));
-    row.appendChild(el('td', {text:''}));
+    document.getElementById('reverse-teachers').value = String(state.written.reverseTeachers);
     GRADES.forEach(function(g){
       var td = document.createElement('td');
       var inp = numberInput(state.written.targets[g], {field:'target', grade:g}, 'any');
@@ -753,35 +827,59 @@
 
   function renderReverseOutput(){
     var cats = state.written.categories;
-    var res = reverseRates();
-    var tbody = document.querySelector('[data-role="reverse-tbody"]');
+    var sets = document.querySelector('[data-role="reverse-sets"]');
     var notes = document.querySelector('[data-role="reverse-notes"]');
-    tbody.innerHTML = ''; notes.innerHTML = '';
-    cats.forEach(function(c, i){
-      var tr = document.createElement('tr');
-      tr.appendChild(el('td', {text: c.type + ' · ' + c.difficulty}));
-      tr.appendChild(el('td', {text: String(Number(c.weight) || 0)}));
-      GRADES.forEach(function(g){ tr.appendChild(el('td', {text: res[g].rates[i] + '%'})); });
-      tbody.appendChild(tr);
+    var aside = document.querySelector('[data-role="grade-list"][data-panel="reverse"]');
+    sets.innerHTML = ''; notes.innerHTML = ''; aside.innerHTML = '';
+
+    if(cats.length === 0){
+      notes.appendChild(el('li', {text:'① 배점 구간을 먼저 입력하세요. 구간이 있어야 정답률을 계산할 수 있어요.'}));
+      notes.hidden = false;
+      return;
+    }
+
+    var res = reversePlan();
+    var groups = [];
+    res.teachers.forEach(function(t, k){
+      var key = JSON.stringify(t);
+      var grp = groups.filter(function(x){ return x.key === key; })[0];
+      if(grp) grp.members.push(k + 1); else groups.push({ key:key, table:t, members:[k + 1] });
     });
-    var tr = document.createElement('tr');
-    tr.className = 'result-row';
-    tr.appendChild(el('td', {text:'예상 결과'}));
-    tr.appendChild(el('td', {text:''}));
-    GRADES.forEach(function(g){ tr.appendChild(el('td', {text: fmt(res[g].score)})); });
-    tbody.appendChild(tr);
 
     var msgs = [];
-    cats.forEach(function(c, i){
-      for(var k = 0; k < GRADES.length - 1; k++){
-        var hi = res[GRADES[k]].rates[i], lo = res[GRADES[k+1]].rates[i];
-        var label = c.type + '·' + c.difficulty + ': ';
-        if(hi < lo) msgs.push(label + GRADES[k] + ' 정답률이 ' + GRADES[k+1] + '보다 낮아요 — 목표 순서를 확인하세요.');
-        else if(hi - lo >= 20) msgs.push(label + GRADES[k] + '-' + GRADES[k+1] + ' 차이가 ' + (hi - lo) + '점이라 나이스에 입력이 안 돼요 — ' + BOUNDARIES[GRADES[k]] + '와 ' + BOUNDARIES[GRADES[k+1]] + ' 목표를 더 가깝게 잡으세요.');
-      }
+    groups.forEach(function(grp){
+      var who = groups.length === 1 ? (res.n > 1 ? '교사 ' + res.n + '명 모두 같은 값' : '교사 1명') : '교사 ' + grp.members.join('·');
+      var block = el('div', {class:'set-block'}, [ el('h4', {text: who}) ]);
+      if(groups.length > 1) block.firstChild.appendChild(el('span', {text: grp.members.length + '명'}));
+      var tbody = document.createElement('tbody');
+      cats.forEach(function(c, i){
+        var tr = document.createElement('tr');
+        tr.appendChild(el('td', {text: c.type + ' · ' + c.difficulty}));
+        tr.appendChild(el('td', {text: String(Number(c.weight) || 0)}));
+        GRADES.forEach(function(g){ tr.appendChild(el('td', {text: grp.table[g][i] + '%'})); });
+        tbody.appendChild(tr);
+        var label = (groups.length > 1 ? who + ' · ' : '') + c.type + '·' + c.difficulty + ': ';
+        for(var k = 0; k < GRADES.length - 1; k++){
+          var hi = grp.table[GRADES[k]][i], lo = grp.table[GRADES[k+1]][i];
+          if(hi < lo) msgs.push(label + GRADES[k] + ' 정답률이 ' + GRADES[k+1] + '보다 낮아요 — 목표 순서를 확인하세요.');
+          else if(hi - lo >= 20) msgs.push(label + GRADES[k] + '-' + GRADES[k+1] + ' 차이가 ' + (hi - lo) + '점이라 나이스에 입력이 안 돼요 — ' + BOUNDARIES[GRADES[k]] + '와 ' + BOUNDARIES[GRADES[k+1]] + ' 목표를 더 가깝게 잡으세요.');
+        }
+      });
+      var table = el('table', {class:'item-table reverse-table'}, [
+        el('thead', {}, [ el('tr', {}, ['구간','배점합','A%','B%','C%','D%','E%'].map(function(h, i){ return el('th', i === 0 ? {style:'text-align:left', text:h} : {text:h}); })) ]),
+        tbody
+      ]);
+      block.appendChild(el('div', {class:'table-wrap'}, [table]));
+      sets.appendChild(block);
     });
+
     GRADES.forEach(function(g){
-      if(res[g].diff >= 1) msgs.push(BOUNDARIES[g] + ': 5점 단위 한계로 목표보다 ' + fmt(res[g].diff) + '점 차이가 나요.');
+      var p = res.plan[g];
+      if(p.diff >= 1) msgs.push(BOUNDARIES[g] + ': 5점 단위 한계로 목표보다 ' + fmt(p.diff) + '점 차이가 나요' + (res.n < 10 ? ' — 교사 인원이 많을수록 더 가깝게 맞출 수 있어요.' : '.'));
+      aside.appendChild(el('div', {class:'grade-row'}, [
+        el('div', {class:'grade-label'}, [ el('span', {class:'grade-badge', text:BOUNDARIES[g]}), el('span', {text:'목표 ' + (Number(state.written.targets[g]) || 0)}) ]),
+        el('div', {class:'grade-score'}, [ document.createTextNode(fmt(p.mean)), el('span', {class:'unit', text:'점'}) ])
+      ]));
     });
     msgs.forEach(function(m){ notes.appendChild(el('li', {text:m})); });
     notes.hidden = msgs.length === 0;
@@ -813,8 +911,9 @@
   function renderTotalScoreWritten(){
     var sum = 0;
     state.written.categories.forEach(function(c){ sum += Number(c.weight) || 0; });
-    var target = document.querySelector('.calc-panel[data-panel="written"] [data-role="total-score"]');
-    if(target) target.textContent = (Math.round(sum*100)/100).toString();
+    document.querySelectorAll('.calc-panel[data-panel="written"] [data-role="total-score"], .calc-panel[data-panel="reverse"] [data-role="total-score"]').forEach(function(target){
+      target.textContent = (Math.round(sum*100)/100).toString();
+    });
   }
   function renderTotalScorePerformance(){
     var sum = 0;
@@ -872,6 +971,7 @@
     }
     if(field === 'autoGap'){ state.written.autoGap = Number(t.value); autoFillTargets(state.written.anchor || 'E'); renderReverseOutput(); persist(); return; }
     if(field === 'spread'){ state.written.spread = Number(t.value); renderReverseOutput(); persist(); return; }
+    if(field === 'reverseTeachers'){ state.written.reverseTeachers = t.value; renderReverseOutput(); persist(); return; }
 
     if(t.hasAttribute('data-catid') && !t.hasAttribute('data-tid')){
       var cat = findCategory(t.getAttribute('data-catid'));
@@ -1013,11 +1113,14 @@
   }
 
   function switchTab(tab){
+    if(!document.getElementById('panel-' + tab)) tab = 'written';
     state.activeTab = tab;
-    document.getElementById('tab-btn-written').setAttribute('aria-selected', String(tab === 'written'));
-    document.getElementById('tab-btn-performance').setAttribute('aria-selected', String(tab === 'performance'));
-    document.getElementById('panel-written').hidden = tab !== 'written';
-    document.getElementById('panel-performance').hidden = tab !== 'performance';
+    ['written', 'performance', 'reverse'].forEach(function(k){
+      document.getElementById('tab-btn-' + k).setAttribute('aria-selected', String(tab === k));
+      document.getElementById('panel-' + k).hidden = tab !== k;
+    });
+    // both written and reverse tabs show the shared category table; refresh the one coming into view
+    if(tab !== 'performance'){ renderCategoryTable(); renderTotalScoreWritten(); }
     persist();
   }
 
@@ -1028,6 +1131,7 @@
     if(restored){ state = restored; syncTeacherCategories(); }
     if(!state.written.targets) state.written.targets = defaultTargets();
     if(state.written.spread == null) state.written.spread = 10;
+    if(state.written.reverseTeachers == null) state.written.reverseTeachers = 3;
     renderAll();
     switchTab(state.activeTab || 'written');
   }
