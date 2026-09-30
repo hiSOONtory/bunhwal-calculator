@@ -423,6 +423,16 @@
           }
         }
       });
+      cats.forEach(function(easy){
+        cats.forEach(function(hard){
+          if(easy.type !== hard.type || !((DIFF_DIR[easy.difficulty] || 0) > (DIFF_DIR[hard.difficulty] || 0))) return;
+          var re = t.rates[easy.id] || blankRates(), rh = t.rates[hard.id] || blankRates();
+          GRADES.forEach(function(g){
+            var ve = Number(re[g]) || 0, vh = Number(rh[g]) || 0;
+            if(ve < vh) out.push((t.name || '교사') + ' · ' + easy.type + ' ' + g + '등급: ' + hard.difficulty + '(' + vh + '%)이 ' + easy.difficulty + '(' + ve + '%)보다 높습니다 — 어려운 구간일수록 정답률이 낮아야 해요.');
+          });
+        });
+      });
     });
 
     cats.forEach(function(c){
