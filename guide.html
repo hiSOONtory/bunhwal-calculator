@@ -73,6 +73,14 @@
   .type-grid-3{ grid-template-columns:repeat(3, 1fr); }
   @media (max-width:600px){ .type-grid, .type-grid-3{ grid-template-columns:1fr; } }
 
+  .terms{ display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; margin-top:12px; }
+  @media (max-width:600px){ .terms{ grid-template-columns:1fr; } }
+  .term{ background:var(--board-deep); border:1.5px dashed var(--line); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:4px; }
+  .term b{ font-family:var(--font-display); font-weight:400; font-size:19px; color:var(--yellow); }
+  .term span{ font-size:12.5px; line-height:1.6; color:var(--chalk-dim); }
+  .term-wide{ grid-column:1 / -1; }
+  .hero-link{ display:inline-block; margin-top:14px; color:var(--yellow); font-weight:700; font-size:14px; text-underline-offset:3px; }
+
   .reverse-pic{ margin-bottom:18px; overflow-x:auto; }
   .reverse-pic svg{ min-width:560px; display:block; }
   .tip{ margin:16px 0 0; font-size:13.5px; line-height:1.7; color:var(--chalk-dim); }
@@ -146,6 +154,7 @@
     <p class="kicker">분할점수 계산기 · 사용법</p>
     <h1>선생님 점수를 모으면,<br>등급 경계선이 됩니다</h1>
     <p class="lede">교사마다 "이 정도는 해야 A지" 하고 생각하는 정답률을 넣으면, 계산기가 평균 내서 A~E 등급을 가르는 점수선을 그어줍니다.</p>
+    <a class="hero-link" href="https://bunhwal-calculator.pages.dev/">계산기 열기 →</a>
   </header>
 
   <div class="staircase-wrap">
@@ -190,7 +199,15 @@
         <circle cx="28" cy="12" r="2.6" fill="#F2CB5D" stroke="none"/>
         <path d="M4 40 L44 40" stroke-dasharray="1 5"/>
       </svg>
-      <p>시험 문제를 다 내고 나면, "몇 점부터 A고 몇 점부터 E인지" 미리 정해야 해요. 이때 <strong>선생님마다 예상하는 기준이 조금씩 다르니까</strong>, 여러 선생님의 생각을 입력받아 평균을 내는 게 이 계산기가 하는 일 전부예요.</p>
+      <p>시험이 끝나면 학생 점수를 <strong>성취도 A~E</strong>로 바꿔야 해요. A가 가장 높은 성취수준이고 E로 갈수록 낮아져요. 이때 등급을 가르는 경계 점수가 <strong>분할점수</strong>예요. 성취율 90·80·70·60%로 딱 자르는 대신, 이번 시험 문제를 보고 선생님들이 "이 정도면 A" 하고 예상해서 정하는 거죠. 선생님마다 예상이 조금씩 다르니까, 여러 분의 생각을 받아 평균 내는 게 이 계산기가 하는 일 전부예요.</p>
+    </div>
+    <div class="terms">
+      <div class="term"><b>A/B</b><span>A를 받는 최소 점수. 이 점수 이상이면 A, 미만이면 B예요.</span></div>
+      <div class="term"><b>B/C</b><span>B를 받는 최소 점수. 이상이면 B, 미만이면 C.</span></div>
+      <div class="term"><b>C/D</b><span>C를 받는 최소 점수. 이상이면 C, 미만이면 D.</span></div>
+      <div class="term"><b>D/E</b><span>D를 받는 최소 점수. 이상이면 D, 미만이면 E.</span></div>
+      <div class="term"><b>E/I</b><span>E를 받는 최소 점수. 1학년은 이 점수 미만이면 미도달(I)이에요.</span></div>
+      <div class="term term-wide"><b>최소능력자</b><span>그 등급을 '겨우' 받는 학생이에요. 예상 정답률은 반 평균이 아니라 이 학생 기준으로 생각해서 넣어요.</span></div>
     </div>
   </section>
 
@@ -257,7 +274,7 @@
         </svg>
         <div>
           <h4>선생님별 예상 정답률 입력</h4>
-          <p>"+교사 추가"로 카드를 만들고, A~E 칸에 예상 정답률(%)을 넣어요. 5점 단위(E는 1점 단위), 등급 간 차이는 20점 이내로.</p>
+          <p>"+교사 추가"로 카드를 만들고, A~E 칸에 예상 정답률(%)을 넣어요. 5점 단위(E는 1점 단위), 옆 등급끼리 차이는 20점 미만(5점 단위라 최대 15점), A와 E 차이는 60점 미만으로.</p>
         </div>
       </div>
       <div class="step">
@@ -267,7 +284,7 @@
         </svg>
         <div>
           <h4>결과 확인하고 복사</h4>
-          <p>오른쪽에 A/B~E/I 분할점수가 바로 뜨고, "결과 복사"를 누르면 등급과 점수가 줄마다 탭으로 구분된 텍스트로 복사돼요. 한글이나 엑셀 표에 붙여넣으면 칸이 알아서 나뉘어요.</p>
+          <p>오른쪽에 A/B~E/I 분할점수가 바로 뜨고, "결과 복사"를 누르면 등급과 점수가 줄마다 탭으로 구분된 텍스트로 복사돼요. 한글이나 엑셀 표에 붙여넣으면 칸이 알아서 나뉘어요. 교사 카드, ③, ④ 표에도 "엑셀로 복사" 버튼이 있어서 화면에 보이는 표 그대로 엑셀에 붙여넣을 수 있어요.</p>
         </div>
       </div>
     </div>
@@ -306,13 +323,13 @@
           <text x="110" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#F2CB5D">① 목표 분할점수</text>
           <g font-size="12.5" fill="#F4EFE1">
             <rect x="30" y="30" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
-            <text x="44" y="47">A/B</text><text x="176" y="47" text-anchor="end" font-weight="700">80</text>
+            <text x="44" y="47">A/B</text><text x="176" y="47" text-anchor="end" font-weight="700">76</text>
             <rect x="30" y="60" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
-            <text x="44" y="77">B/C</text><text x="176" y="77" text-anchor="end" font-weight="700">65</text>
+            <text x="44" y="77">B/C</text><text x="176" y="77" text-anchor="end" font-weight="700">62</text>
             <rect x="30" y="90" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
-            <text x="44" y="107">C/D</text><text x="176" y="107" text-anchor="end" font-weight="700">50</text>
+            <text x="44" y="107">C/D</text><text x="176" y="107" text-anchor="end" font-weight="700">48</text>
             <rect x="30" y="120" width="160" height="24" rx="6" fill="#24452F" stroke="#B9C9BB" stroke-dasharray="4 4"/>
-            <text x="44" y="137">D/E</text><text x="176" y="137" text-anchor="end" font-weight="700">35</text>
+            <text x="44" y="137">D/E</text><text x="176" y="137" text-anchor="end" font-weight="700">34</text>
             <rect x="30" y="150" width="160" height="24" rx="6" fill="#3A3020" stroke="#F2CB5D"/>
             <text x="44" y="167" fill="#F2CB5D">E/I</text><text x="176" y="167" text-anchor="end" font-weight="700" fill="#F2CB5D">20</text>
           </g>
@@ -325,13 +342,13 @@
           <g font-size="12.5" fill="#F4EFE1" text-anchor="middle">
             <rect x="320" y="58" width="290" height="30" rx="6" fill="#24452F"/>
             <text x="345" y="78" font-size="11.5" fill="#B9C9BB">쉬움</text>
-            <text x="408" y="78">90</text><text x="452" y="78">75</text><text x="496" y="78">60</text><text x="540" y="78">45</text><text x="584" y="78">30</text>
+            <text x="408" y="78">85</text><text x="452" y="78">70</text><text x="496" y="78">60</text><text x="540" y="78">45</text><text x="584" y="78">30</text>
             <rect x="320" y="94" width="290" height="30" rx="6" fill="#24452F"/>
             <text x="345" y="114" font-size="11.5" fill="#B9C9BB">보통</text>
-            <text x="408" y="114">80</text><text x="452" y="114">65</text><text x="496" y="114">50</text><text x="540" y="114">35</text><text x="584" y="114">20</text>
+            <text x="408" y="114">75</text><text x="452" y="114">60</text><text x="496" y="114">50</text><text x="540" y="114">35</text><text x="584" y="114">20</text>
             <rect x="320" y="130" width="290" height="30" rx="6" fill="#24452F"/>
             <text x="345" y="150" font-size="11.5" fill="#B9C9BB">어려움</text>
-            <text x="408" y="150">70</text><text x="452" y="150">55</text><text x="496" y="150">40</text><text x="540" y="150">25</text><text x="584" y="150">10</text>
+            <text x="408" y="150">65</text><text x="452" y="150">50</text><text x="496" y="150">40</text><text x="540" y="150">25</text><text x="584" y="150">10</text>
           </g>
           <text x="465" y="182" text-anchor="middle" font-size="11" fill="#B9C9BB">예시 배점(25.2 · 45.8 · 29점)으로 계산한 값이에요</text>
         </g>
@@ -359,7 +376,7 @@
         </svg>
         <div>
           <h4>협의 교사 인원 넣기</h4>
-          <p>교사가 여럿이면 몇 명만 조금 다르게 넣어서, 평균을 목표에 더 가깝게 맞춰줘요.</p>
+          <p>나이스는 교사들 정답률의 <b>평균</b>으로 분할점수를 만들어요. 정답률은 5점 단위라 혼자서는 목표에 딱 못 맞출 때가 있는데, 3명이면 1명만 5점 높게 넣어도 평균은 약 1.7점(5÷3)만 움직여요. 그래서 인원이 많을수록 목표에 더 가깝게 맞춰져요.</p>
         </div>
       </div>
       <div class="step">
@@ -371,7 +388,7 @@
         </svg>
         <div>
           <h4>목표 한 칸만 입력</h4>
-          <p>'등급 간격 자동 채우기'를 15점으로 두고 E/I에 20을 넣으면 80·65·50·35·20이 채워져요.</p>
+          <p>'등급 간격 자동 채우기'를 14%p로 두고 E/I에 20을 넣으면 76·62·48·34·20이 채워져요. 간격은 배점 합계에 대한 %p라서 100점 만점이면 14%p = 14점이에요. A/B와 E/I 차이가 60 미만이어야 해서 최대 14%p예요.</p>
         </div>
       </div>
       <div class="step">
@@ -381,7 +398,7 @@
         </svg>
         <div>
           <h4>교사별 정답률 그대로 입력</h4>
-          <p>"교사 1 / 교사 2·3"처럼 나눠서 보여줘요. 각자 자기 표대로 나이스에 넣으면 오른쪽 점수대로 나와요.</p>
+          <p>"교사 1 / 교사 2·3"처럼 나눠서 보여줘요. 각자 자기 표대로 나이스에 넣으면 오른쪽 점수대로 나와요. 표마다 있는 "엑셀로 복사"를 누르면 그대로 엑셀에 붙여넣을 수 있어요.</p>
         </div>
       </div>
     </div>
@@ -399,7 +416,7 @@
         <rect x="8" y="26" width="14" height="14" rx="2"/>
         <path d="M30 30 l3 3 l7 -7" stroke="#F2CB5D"/>
       </svg>
-      <p>평가요소마다 만점과, A~E 등급이 받아야 할 <strong>최소 점수</strong>만 넣으면 돼요. 요소별 최소 점수를 더하면 그게 바로 그 등급의 분할점수예요. 평균 낼 필요도 없어요.</p>
+      <p>평가요소마다 만점과, A~E 등급이 받아야 할 <strong>최소 점수</strong>만 넣으면 돼요. 요소별 최소 점수를 더하면 그게 바로 그 등급의 분할점수예요. 평균 낼 필요도 없어요. 나이스에는 요소별 점수가 아니라 표 맨 아래 <strong>합계</strong> 줄을 그대로 넣으면 돼요.</p>
     </div>
   </section>
 
@@ -410,16 +427,17 @@
         <path d="M24 20 v10" />
         <circle cx="24" cy="34" r="1.6" fill="#F4EFE1" stroke="none"/>
       </svg>
-      <h2>꼭 알아야 할 5가지</h2>
+      <h2>꼭 알아야 할 6가지</h2>
     </div>
     <ul>
       <li>정답률은 <strong>5점 단위</strong>로 (E등급만 1점 단위 가능)</li>
-      <li>바로 위·아래 등급끼리 점수 차이가 <strong>20점 이상이면 안 돼요</strong></li>
+      <li>바로 위·아래 등급끼리 차이는 <strong>20점 미만</strong>이어야 해요 (5점 단위라 실제로는 최대 15점)</li>
+      <li>A와 E(분할점수로는 A/B와 E/I) 차이는 <strong>60점 미만</strong>이어야 해요</li>
       <li>위 등급 점수가 아래 등급보다 <strong>낮으면 안 돼요</strong> (예: A가 B보다 낮으면 오류)</li>
       <li>어려운 구간 정답률이 쉬운 구간보다 <strong>높으면 안 돼요</strong> (예: 보통 90, 쉬움 85면 오류)</li>
       <li>같은 구간에서 <strong>교사 간 예상 정답률 차이가 20%p 이상</strong>이면 재협의를 권장해요</li>
     </ul>
-    <p class="note">다섯 가지 다 직접 계산할 필요 없어요 — 어기는 순간 화면 아래에 노란 경고 문구가 자동으로 떠요. 경고가 하나도 없을 때 최종본을 나이스에 올리세요. 입력한 내용은 손 뗄 때마다 이 브라우저에 자동 저장되니, 협의 도중 창을 닫아도 다음에 열면 그대로예요.</p>
+    <p class="note">여섯 가지 다 직접 계산할 필요 없어요 — 어기는 순간 화면 아래에 노란 경고 문구가 자동으로 떠요. 경고가 하나도 없을 때 최종본을 나이스에 올리세요. 입력한 내용은 손 뗄 때마다 이 브라우저에 자동 저장되니, 협의 도중 창을 닫아도 다음에 열면 그대로예요.</p>
   </section>
 
   <footer>

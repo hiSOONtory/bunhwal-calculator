@@ -126,7 +126,12 @@
   .target-table tr.target-row input[type="number"]{ border-color:var(--seal); background:var(--paper); font-weight:600; }
   .knob-label{ font-size:13px; color:var(--ink-soft); }
   .num-input{ width:64px; font-family:var(--font-mono); text-align:center; }
+  table.item-table tfoot td{ font-weight:700; color:var(--seal); border-top:1px solid var(--line); }
+  table.item-table tfoot td:first-child{ width:auto; font-family:var(--font-body); color:var(--seal); text-align:left; }
+  .guide-link{ color:var(--seal); font-weight:700; text-decoration:underline; text-underline-offset:3px; white-space:nowrap; }
   .set-block{ margin-bottom:14px; }
+  .set-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+  .set-head h4{ margin:0; }
   .set-block h4{ margin:0 0 6px; font-size:13.5px; font-weight:700; color:var(--ink); }
   .set-block h4 span{ font-weight:400; color:var(--ink-faint); margin-left:6px; }
   .note-list{ margin:0 0 12px; padding:8px 12px 8px 28px; font-size:12.5px; color:var(--warn-text); line-height:1.6; background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:7px; }
@@ -161,7 +166,7 @@
       <h1>추정분할점수 계산기</h1>
       <p class="credit">정수훈 · 성안고등학교</p>
     </div>
-    <p class="subtitle">난이도·유형별 배점 구간에 교사별 예상 정답률을 입력하면, 협의 참여 교사들의 값을 평균해 등급 경계(A/B~E/I) 분할점수를 자동 계산합니다. 최종 분할점수는 학업성적관리위원회 심의를 거쳐 확정하세요.</p>
+    <p class="subtitle">난이도·유형별 배점 구간에 교사별 예상 정답률을 입력하면, 협의 참여 교사들의 값을 평균해 등급 경계(A/B~E/I) 분할점수를 자동 계산합니다. 최종 분할점수는 학업성적관리위원회 심의를 거쳐 확정하세요. <a class="guide-link" href="https://bunhwal-calculator.pages.dev/guide" target="_blank" rel="noopener">처음이면 사용법부터 보기 →</a></p>
     <nav class="tabs" role="tablist" aria-label="계산기 종류">
       <button class="tab-btn" id="tab-btn-written" role="tab" aria-selected="true" aria-controls="panel-written" data-tab="written" data-action="switch-tab">정기시험(지필평가)</button>
       <button class="tab-btn" id="tab-btn-performance" role="tab" aria-selected="false" aria-controls="panel-performance" data-tab="performance" data-action="switch-tab">수행평가</button>
@@ -203,6 +208,7 @@
 
         <div class="subsection">
           <h3>③ 교사별 산출점수 (검산용)</h3>
+          <div class="toolbar"><button class="btn btn-ghost btn-sm" data-action="copy-table">엑셀로 복사</button></div>
           <div class="table-wrap">
             <table class="item-table verify-table">
               <thead><tr><th style="text-align:left">교사</th><th>A/B</th><th>B/C</th><th>C/D</th><th>D/E</th><th>E/I</th></tr></thead>
@@ -216,6 +222,7 @@
         <div class="subsection" style="margin-top:26px">
           <h3>④ 최종 분할점수는 이렇게 나와요</h3>
           <p class="subnote">구간마다 <strong>배점합 × 교사들 평균 정답률 ÷ 100</strong>을 구해 모두 더한 값이 그 등급의 분할점수입니다. 칸의 작은 숫자는 평균 정답률, 큰 숫자는 그 구간이 보태는 점수예요.</p>
+          <div class="toolbar"><button class="btn btn-ghost btn-sm" data-action="copy-table">엑셀로 복사</button></div>
           <div class="table-wrap">
             <table class="item-table breakdown-table">
               <thead><tr><th style="text-align:left">구간</th><th>배점합</th><th>A/B</th><th>B/C</th><th>C/D</th><th>D/E</th><th>E/I</th></tr></thead>
@@ -236,7 +243,7 @@
     <section class="calc-panel" id="panel-reverse" data-panel="reverse" role="tabpanel" aria-labelledby="tab-btn-reverse" hidden>
       <div class="panel-main">
         <div class="panel-intro">
-          <p>원하는 분할점수를 먼저 정하면, 나이스 규칙(5점 단위, E는 1점 단위, 급간 20점 미만)에 맞는 <strong>예상 정답률</strong>을 거꾸로 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요.</p>
+          <p>원하는 분할점수를 먼저 정하면, 나이스 규칙(5점 단위·E는 1점 단위, 바로 옆 등급끼리 20점 미만, A~E 전체 60점 미만)에 맞는 <strong>예상 정답률</strong>을 거꾸로 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요.</p>
         </div>
 
         <div class="subsection">
@@ -256,7 +263,8 @@
 
         <div class="subsection">
           <h3>② 협의 조건</h3>
-          <p class="subnote">교사가 여러 명이면 몇 명만 5점 다르게 넣어서, 평균을 목표에 더 가깝게 맞출 수 있어요.</p>
+          <p class="subnote">나이스는 협의 교사들이 넣은 정답률을 <strong>평균</strong>내서 분할점수를 만들어요. 정답률은 5점 단위라 혼자 넣으면 목표에 딱 못 맞출 때가 있는데, 교사가 3명이면 그중 1명만 5점 높게 넣어도 평균은 5÷3 ≈ 1.7점만 움직여요. 그래서 인원이 많을수록 목표에 더 가깝게 맞출 수 있고, 누가 어떻게 넣을지는 ④에 '교사 1 / 교사 2·3'처럼 나눠서 보여줘요.</p>
+          <p class="subnote">'정답률 차이'는 같은 등급에서 쉬움→보통→어려움으로 갈 때 정답률을 몇 %p씩 낮출지예요(%p = 퍼센트끼리의 차이, 예: 90%→80%는 10%p).</p>
           <div class="toolbar">
             <label for="reverse-teachers" class="knob-label">협의 교사 인원</label>
             <input id="reverse-teachers" type="number" min="1" max="10" step="1" class="btn btn-sm num-input" data-field="reverseTeachers">
@@ -269,11 +277,11 @@
 
         <div class="subsection">
           <h3>③ 목표 분할점수</h3>
-          <p class="subnote">'등급 간격 자동 채우기'를 켜면 한 칸만 넣어도 나머지가 채워져요(예: 15점 + E/I에 20 → 80·65·50·35·20).</p>
+          <p class="subnote">'등급 간격 자동 채우기'를 켜면 한 칸만 넣어도 나머지가 채워져요(예: 14%p + E/I에 20 → 76·62·48·34·20). 간격은 <strong>배점 합계에 대한 %p</strong>라서, 배점 합계가 100점이면 14%p = 14점이에요. A/B와 E/I 차이가 60 미만이어야 해서 최대 14%p까지 고를 수 있어요.</p>
           <div class="toolbar">
             <label for="gap-select" class="knob-label">등급 간격 자동 채우기</label>
             <select id="gap-select" class="btn btn-sm" data-field="autoGap">
-              <option value="0">끄기</option><option value="5">5점</option><option value="10">10점</option><option value="15">15점</option>
+              <option value="0">끄기</option><option value="5">5%p</option><option value="10">10%p</option><option value="14">14%p</option>
             </select>
           </div>
           <div class="table-wrap">
@@ -306,8 +314,10 @@
           <button class="btn btn-primary" data-action="add-row" data-panel="performance">+ 평가요소 추가</button>
           <button class="btn btn-ghost" data-action="load-sample" data-panel="performance">예시로 초기화</button>
           <button class="btn btn-ghost" data-action="clear" data-panel="performance">표 비우기</button>
+          <button class="btn btn-ghost" data-action="copy-table">엑셀로 복사</button>
           <span class="summary-line">만점 합계 <strong data-role="total-score">0</strong>점</span>
         </div>
+        <p class="subnote">나이스에는 요소별 점수가 아니라 표 맨 아래 <strong>합계</strong> 줄(등급별 최소 배점의 합)을 입력해요.</p>
         <div class="table-wrap">
           <table class="item-table">
             <thead>
@@ -315,6 +325,7 @@
                 <th class="grade-col">A최소</th><th class="grade-col">B최소</th><th class="grade-col">C최소</th><th class="grade-col">D최소</th><th class="grade-col">E최소</th><th class="col-del"></th></tr>
             </thead>
             <tbody data-role="tbody" data-panel="performance"></tbody>
+            <tfoot data-role="perf-tfoot"></tfoot>
           </table>
         </div>
         <div class="warnings" data-role="warnings" data-panel="performance" hidden></div>
@@ -354,9 +365,9 @@
 
   function sampleTeachers(cats){
     var rows = [
-      { name:'교사1', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:30}, {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20} ] },
-      { name:'교사2', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:30}, {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20} ] },
-      { name:'교사3', round:'2라운드(최종)', rates:[ {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20}, {A:75,B:60,C:45,D:30,E:15} ] }
+      { name:'교사1', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:31}, {A:85,B:70,C:55,D:40,E:26}, {A:80,B:65,C:50,D:35,E:21} ] },
+      { name:'교사2', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:31}, {A:85,B:70,C:55,D:40,E:26}, {A:80,B:65,C:50,D:35,E:21} ] },
+      { name:'교사3', round:'2라운드(최종)', rates:[ {A:85,B:70,C:55,D:40,E:26}, {A:80,B:65,C:50,D:35,E:21}, {A:75,B:60,C:45,D:30,E:16} ] }
     ];
     return rows.map(function(r){
       var rates = {};
@@ -463,9 +474,11 @@
           if(hi < lo){
             out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': ' + GRADES[i] + ' 정답률이 ' + GRADES[i+1] + '보다 낮습니다.');
           } else if(hi - lo >= 20){
-            out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': ' + GRADES[i] + '-' + GRADES[i+1] + ' 급간 차이가 ' + (hi - lo) + '점으로 20점 이상입니다.');
+            out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': ' + GRADES[i] + '-' + GRADES[i+1] + ' 급간 차이가 ' + (hi - lo) + '점이에요 — 20점 미만이어야 해요(5점 단위라 최대 15점).');
           }
         }
+        var spanAE = (Number(r.A) || 0) - (Number(r.E) || 0);
+        if(spanAE >= 60) out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': A와 E 정답률 차이가 ' + spanAE + '점이에요 — 60점 미만이어야 해요.');
       });
       cats.forEach(function(easy){
         cats.forEach(function(hard){
@@ -496,6 +509,9 @@
       if(totals[GRADES[i]] < totals[GRADES[i+1]]){
         out.push('등급 역전: ' + BOUNDARIES[GRADES[i]] + '(' + totals[GRADES[i]] + ')가 ' + BOUNDARIES[GRADES[i+1]] + '(' + totals[GRADES[i+1]] + ')보다 낮습니다.');
       }
+    }
+    if(teachers.length && totals.A - totals.E >= 60){
+      out.push('A/B(' + fmt(totals.A) + ')와 E/I(' + fmt(totals.E) + ') 차이가 ' + fmt(totals.A - totals.E) + '점이에요 — 60점 미만이어야 해요.');
     }
     return out;
   }
@@ -612,7 +628,8 @@
       var delBtn = document.createElement('button');
       delBtn.className = 'row-del'; delBtn.setAttribute('data-action','delete-teacher'); delBtn.setAttribute('data-tid', t.id);
       delBtn.setAttribute('aria-label','교사 삭제'); delBtn.textContent = '✕';
-      head.appendChild(nameInput); head.appendChild(roundInput); head.appendChild(delBtn);
+      var copyBtn = el('button', {class:'btn btn-ghost btn-sm', 'data-action':'copy-table', text:'엑셀로 복사'});
+      head.appendChild(nameInput); head.appendChild(roundInput); head.appendChild(copyBtn); head.appendChild(delBtn);
       block.appendChild(head);
 
       var wrap = document.createElement('div');
@@ -731,7 +748,7 @@
       GRADES.forEach(function(g){
         var r = avgRate(c, g), part = w * r / 100;
         totals[g] += part;
-        tr.appendChild(el('td', {}, [ el('span', {class:'rate', text: (Math.round(r*10)/10) + '%'}), document.createTextNode(fmt(part)) ]));
+        tr.appendChild(el('td', {'data-copy': fmt(part)}, [ el('span', {class:'rate', text: (Math.round(r*10)/10) + '%'}), document.createTextNode(fmt(part)) ]));
       });
       tbody.appendChild(tr);
     });
@@ -815,10 +832,13 @@
   function autoFillTargets(anchor){
     var gap = Number(state.written.autoGap) || 0;
     if(!gap) return;
+    var total = 0;
+    state.written.categories.forEach(function(c){ total += Number(c.weight) || 0; });
+    var step = gap * (total || 100) / 100;
     var i0 = GRADES.indexOf(anchor), base = Number(state.written.targets[anchor]) || 0;
     GRADES.forEach(function(g, i){
       if(i === i0) return;
-      var v = Math.min(100, Math.max(0, base + (i0 - i) * gap));
+      var v = Math.round(Math.min(total || 100, Math.max(0, base + (i0 - i) * step)) * 100) / 100;
       state.written.targets[g] = v;
       var inp = document.getElementById('target-' + g);
       if(inp) inp.value = v;
@@ -849,12 +869,14 @@
     var msgs = [];
     groups.forEach(function(grp){
       var who = groups.length === 1 ? (res.n > 1 ? '교사 ' + res.n + '명 모두 같은 값' : '교사 1명') : '교사 ' + grp.members.join('·');
-      var block = el('div', {class:'set-block'}, [ el('h4', {text: who}) ]);
-      if(groups.length > 1) block.firstChild.appendChild(el('span', {text: grp.members.length + '명'}));
+      var h4 = el('h4', {text: who});
+      if(groups.length > 1) h4.appendChild(el('span', {text: grp.members.length + '명'}));
+      var block = el('div', {class:'set-block'}, [ el('div', {class:'set-head'}, [ h4, el('button', {class:'btn btn-ghost btn-sm', 'data-action':'copy-table', text:'엑셀로 복사'}) ]) ]);
       var tbody = document.createElement('tbody');
       cats.forEach(function(c, i){
         var tr = document.createElement('tr');
-        tr.appendChild(el('td', {text: c.type + ' · ' + c.difficulty}));
+        tr.appendChild(el('td', {text: c.type}));
+        tr.appendChild(el('td', {text: c.difficulty}));
         tr.appendChild(el('td', {text: String(Number(c.weight) || 0)}));
         GRADES.forEach(function(g){ tr.appendChild(el('td', {text: grp.table[g][i] + '%'})); });
         tbody.appendChild(tr);
@@ -862,17 +884,21 @@
         for(var k = 0; k < GRADES.length - 1; k++){
           var hi = grp.table[GRADES[k]][i], lo = grp.table[GRADES[k+1]][i];
           if(hi < lo) msgs.push(label + GRADES[k] + ' 정답률이 ' + GRADES[k+1] + '보다 낮아요 — 목표 순서를 확인하세요.');
-          else if(hi - lo >= 20) msgs.push(label + GRADES[k] + '-' + GRADES[k+1] + ' 차이가 ' + (hi - lo) + '점이라 나이스에 입력이 안 돼요 — ' + BOUNDARIES[GRADES[k]] + '와 ' + BOUNDARIES[GRADES[k+1]] + ' 목표를 더 가깝게 잡으세요.');
+          else if(hi - lo >= 20) msgs.push(label + GRADES[k] + '-' + GRADES[k+1] + ' 차이가 ' + (hi - lo) + '점이라 나이스에 입력이 안 돼요(20점 미만, 최대 15점) — ' + BOUNDARIES[GRADES[k]] + '와 ' + BOUNDARIES[GRADES[k+1]] + ' 목표를 더 가깝게 잡으세요.');
         }
+        var span = grp.table.A[i] - grp.table.E[i];
+        if(span >= 60) msgs.push(label + 'A와 E 정답률 차이가 ' + span + '점이라 나이스에 입력이 안 돼요(60점 미만) — A/B와 E/I 목표를 더 가깝게 잡으세요.');
       });
       var table = el('table', {class:'item-table reverse-table'}, [
-        el('thead', {}, [ el('tr', {}, ['구간','배점합','A%','B%','C%','D%','E%'].map(function(h, i){ return el('th', i === 0 ? {style:'text-align:left', text:h} : {text:h}); })) ]),
+        el('thead', {}, [ el('tr', {}, ['유형','난이도','배점합','A%','B%','C%','D%','E%'].map(function(h, i){ return el('th', i === 0 ? {style:'text-align:left', text:h} : {text:h}); })) ]),
         tbody
       ]);
       block.appendChild(el('div', {class:'table-wrap'}, [table]));
       sets.appendChild(block);
     });
 
+    var tA = Number(state.written.targets.A) || 0, tE = Number(state.written.targets.E) || 0;
+    if(tA - tE >= 60) msgs.unshift('목표 A/B(' + tA + ')와 E/I(' + tE + ') 차이가 ' + fmt(tA - tE) + '점이에요 — 60점 미만으로 잡아야 나이스에 입력돼요.');
     GRADES.forEach(function(g){
       var p = res.plan[g];
       if(p.diff >= 1) msgs.push(BOUNDARIES[g] + ': 5점 단위 한계로 목표보다 ' + fmt(p.diff) + '점 차이가 나요' + (res.n < 10 ? ' — 교사 인원이 많을수록 더 가깝게 맞출 수 있어요.' : '.'));
@@ -895,6 +921,14 @@
         el('div', {class:'grade-score'}, [ document.createTextNode(String(totals[g])), el('span', {class:'unit', text:'점'}) ])
       ]));
     });
+    var maxSum = 0;
+    state.performance.items.forEach(function(it){ maxSum += Number(it.maxScore) || 0; });
+    var tfoot = document.querySelector('[data-role="perf-tfoot"]');
+    tfoot.innerHTML = '';
+    var tr = el('tr', {}, [ el('td', {colspan:'2', text:'합계 (나이스에 입력)'}), el('td', {text:String(maxSum)}) ]);
+    GRADES.forEach(function(g){ tr.appendChild(el('td', {text:String(totals[g])})); });
+    tr.appendChild(el('td', {text:''}));
+    tfoot.appendChild(tr);
   }
 
   function renderWarnings(panel){
@@ -1071,14 +1105,18 @@
       var lines;
       if(panel === 'written'){
         var totals = finalCutoffsWritten();
-        lines = ['정기시험(지필평가) 추정분할점수'].concat(GRADES.map(function(g){ return BOUNDARIES[g] + '\t' + totals[g].toFixed(2) + '점'; }));
+        lines = ['정기시험(지필평가) 추정분할점수'].concat(GRADES.map(function(g){ return BOUNDARIES[g] + '\t' + totals[g].toFixed(2); }));
       } else {
         var totalsP = computePerformance();
-        lines = ['수행평가 추정분할점수'].concat(GRADES.map(function(g){ return g + '\t' + totalsP[g] + '점'; }));
+        lines = ['수행평가 추정분할점수'].concat(GRADES.map(function(g){ return g + '\t' + totalsP[g]; }));
       }
-      var text = lines.join('\n');
-      showToast('복사되었습니다');
-      try{ navigator.clipboard.writeText(text).catch(function(){ fallbackCopy(text); }); }catch(e){ fallbackCopy(text); }
+      copyText(lines.join('\n'));
+    }
+
+    if(action === 'copy-table'){
+      var scope = t.closest('.teacher-block, .set-block, .subsection, .panel-main');
+      var table = scope && scope.querySelector('table');
+      if(table) copyText(tableToTsv(table), '표를 복사했어요 — 엑셀에 붙여넣으세요');
     }
 
     if(action === 'switch-tab'){
@@ -1095,6 +1133,28 @@
       if(cat){ cat[field] = t.value; renderTeacherBlocks(); renderVerifyTable(); renderResultsWritten(); renderWarnings('written'); persist(); }
     }
   });
+
+  function copyText(text, msg){
+    showToast(msg || '복사되었습니다');
+    try{ navigator.clipboard.writeText(text).catch(function(){ fallbackCopy(text); }); }catch(e){ fallbackCopy(text); }
+  }
+
+  // Tab-separated rows paste straight into Excel cells; "%" is dropped so cells stay numeric like NEIS input.
+  function tableToTsv(table){
+    return Array.from(table.querySelectorAll('tr')).map(function(tr){
+      var cells = [];
+      Array.from(tr.children).forEach(function(cell){
+        if(cell.classList.contains('col-del') || cell.querySelector('.row-del')) return;
+        var ctl = cell.querySelector('input, select');
+        var v = cell.getAttribute('data-copy');
+        if(v == null) v = ctl ? (ctl.tagName === 'SELECT' ? ctl.options[ctl.selectedIndex].text : ctl.value) : cell.textContent;
+        v = v.replace(/\s+/g, ' ').trim().replace(/%$/, '');
+        cells.push(v);
+        for(var k = 1; k < (Number(cell.getAttribute('colspan')) || 1); k++) cells.push('');
+      });
+      return cells.join('\t');
+    }).join('\n');
+  }
 
   function fallbackCopy(text){
     try{
@@ -1132,6 +1192,7 @@
     if(!state.written.targets) state.written.targets = defaultTargets();
     if(state.written.spread == null) state.written.spread = 10;
     if(state.written.reverseTeachers == null) state.written.reverseTeachers = 3;
+    if(Number(state.written.autoGap) >= 15) state.written.autoGap = 14;
     renderAll();
     switchTab(state.activeTab || 'written');
   }
