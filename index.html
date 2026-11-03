@@ -243,7 +243,7 @@
     <section class="calc-panel" id="panel-reverse" data-panel="reverse" role="tabpanel" aria-labelledby="tab-btn-reverse" hidden>
       <div class="panel-main">
         <div class="panel-intro">
-          <p>원하는 분할점수를 먼저 정하면, 나이스 규칙(5점 단위·E는 1점 단위, 바로 옆 등급끼리 20점 미만, A~E 전체 60점 미만)에 맞는 <strong>예상 정답률</strong>을 거꾸로 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요.</p>
+          <p>원하는 분할점수를 먼저 정하면, 나이스 규칙(5점 단위·E는 1점 단위, 바로 옆 등급끼리 20점 미만, A~E 전체 60점 이하)에 맞는 <strong>예상 정답률</strong>을 거꾸로 찾아줍니다. A/B를 높이면 A 받기가 어려워지고, E/I를 낮추면 미도달이 줄어요.</p>
         </div>
 
         <div class="subsection">
@@ -277,11 +277,11 @@
 
         <div class="subsection">
           <h3>③ 목표 분할점수</h3>
-          <p class="subnote">'등급 간격 자동 채우기'를 켜면 한 칸만 넣어도 나머지가 채워져요(예: 14%p + E/I에 20 → 76·62·48·34·20). 간격은 <strong>배점 합계에 대한 %p</strong>라서, 배점 합계가 100점이면 14%p = 14점이에요. A/B와 E/I 차이가 60 미만이어야 해서 최대 14%p까지 고를 수 있어요.</p>
+          <p class="subnote">'등급 간격 자동 채우기'를 켜면 한 칸만 넣어도 나머지가 채워져요(예: 15%p + E/I에 20 → 80·65·50·35·20). 간격은 <strong>배점 합계에 대한 %p</strong>라서, 배점 합계가 100점이면 15%p = 15점이에요. A/B와 E/I 차이는 60까지 괜찮아서 최대 15%p까지 고를 수 있어요.</p>
           <div class="toolbar">
             <label for="gap-select" class="knob-label">등급 간격 자동 채우기</label>
             <select id="gap-select" class="btn btn-sm" data-field="autoGap">
-              <option value="0">끄기</option><option value="5">5%p</option><option value="10">10%p</option><option value="14">14%p</option>
+              <option value="0">끄기</option><option value="5">5%p</option><option value="10">10%p</option><option value="15">15%p</option>
             </select>
           </div>
           <div class="table-wrap">
@@ -365,9 +365,9 @@
 
   function sampleTeachers(cats){
     var rows = [
-      { name:'교사1', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:31}, {A:85,B:70,C:55,D:40,E:26}, {A:80,B:65,C:50,D:35,E:21} ] },
-      { name:'교사2', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:31}, {A:85,B:70,C:55,D:40,E:26}, {A:80,B:65,C:50,D:35,E:21} ] },
-      { name:'교사3', round:'2라운드(최종)', rates:[ {A:85,B:70,C:55,D:40,E:26}, {A:80,B:65,C:50,D:35,E:21}, {A:75,B:60,C:45,D:30,E:16} ] }
+      { name:'교사1', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:30}, {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20} ] },
+      { name:'교사2', round:'2라운드(최종)', rates:[ {A:90,B:75,C:60,D:45,E:30}, {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20} ] },
+      { name:'교사3', round:'2라운드(최종)', rates:[ {A:85,B:70,C:55,D:40,E:25}, {A:80,B:65,C:50,D:35,E:20}, {A:75,B:60,C:45,D:30,E:15} ] }
     ];
     return rows.map(function(r){
       var rates = {};
@@ -478,7 +478,7 @@
           }
         }
         var spanAE = (Number(r.A) || 0) - (Number(r.E) || 0);
-        if(spanAE >= 60) out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': A와 E 정답률 차이가 ' + spanAE + '점이에요 — 60점 미만이어야 해요.');
+        if(spanAE > 60) out.push((t.name || '교사') + ' · ' + c.type + '/' + c.difficulty + ': A와 E 정답률 차이가 ' + spanAE + '점이에요 — 60점까지만 가능해요.');
       });
       cats.forEach(function(easy){
         cats.forEach(function(hard){
@@ -510,8 +510,8 @@
         out.push('등급 역전: ' + BOUNDARIES[GRADES[i]] + '(' + totals[GRADES[i]] + ')가 ' + BOUNDARIES[GRADES[i+1]] + '(' + totals[GRADES[i+1]] + ')보다 낮습니다.');
       }
     }
-    if(teachers.length && totals.A - totals.E >= 60){
-      out.push('A/B(' + fmt(totals.A) + ')와 E/I(' + fmt(totals.E) + ') 차이가 ' + fmt(totals.A - totals.E) + '점이에요 — 60점 미만이어야 해요.');
+    if(teachers.length && totals.A - totals.E > 60){
+      out.push('A/B(' + fmt(totals.A) + ')와 E/I(' + fmt(totals.E) + ') 차이가 ' + fmt(totals.A - totals.E) + '점이에요 — 60점까지만 가능해요.');
     }
     return out;
   }
@@ -887,7 +887,7 @@
           else if(hi - lo >= 20) msgs.push(label + GRADES[k] + '-' + GRADES[k+1] + ' 차이가 ' + (hi - lo) + '점이라 나이스에 입력이 안 돼요(20점 미만, 최대 15점) — ' + BOUNDARIES[GRADES[k]] + '와 ' + BOUNDARIES[GRADES[k+1]] + ' 목표를 더 가깝게 잡으세요.');
         }
         var span = grp.table.A[i] - grp.table.E[i];
-        if(span >= 60) msgs.push(label + 'A와 E 정답률 차이가 ' + span + '점이라 나이스에 입력이 안 돼요(60점 미만) — A/B와 E/I 목표를 더 가깝게 잡으세요.');
+        if(span > 60) msgs.push(label + 'A와 E 정답률 차이가 ' + span + '점이라 나이스에 입력이 안 돼요(60점까지 가능) — A/B와 E/I 목표를 더 가깝게 잡으세요.');
       });
       var table = el('table', {class:'item-table reverse-table'}, [
         el('thead', {}, [ el('tr', {}, ['유형','난이도','배점합','A%','B%','C%','D%','E%'].map(function(h, i){ return el('th', i === 0 ? {style:'text-align:left', text:h} : {text:h}); })) ]),
@@ -898,7 +898,7 @@
     });
 
     var tA = Number(state.written.targets.A) || 0, tE = Number(state.written.targets.E) || 0;
-    if(tA - tE >= 60) msgs.unshift('목표 A/B(' + tA + ')와 E/I(' + tE + ') 차이가 ' + fmt(tA - tE) + '점이에요 — 60점 미만으로 잡아야 나이스에 입력돼요.');
+    if(tA - tE > 60) msgs.unshift('목표 A/B(' + tA + ')와 E/I(' + tE + ') 차이가 ' + fmt(tA - tE) + '점이에요 — 60점 이하로 잡아야 나이스에 입력돼요.');
     GRADES.forEach(function(g){
       var p = res.plan[g];
       if(p.diff >= 1) msgs.push(BOUNDARIES[g] + ': 5점 단위 한계로 목표보다 ' + fmt(p.diff) + '점 차이가 나요' + (res.n < 10 ? ' — 교사 인원이 많을수록 더 가깝게 맞출 수 있어요.' : '.'));
@@ -1192,7 +1192,7 @@
     if(!state.written.targets) state.written.targets = defaultTargets();
     if(state.written.spread == null) state.written.spread = 10;
     if(state.written.reverseTeachers == null) state.written.reverseTeachers = 3;
-    if(Number(state.written.autoGap) >= 15) state.written.autoGap = 14;
+    if(Number(state.written.autoGap) === 14) state.written.autoGap = 15;
     renderAll();
     switchTab(state.activeTab || 'written');
   }
